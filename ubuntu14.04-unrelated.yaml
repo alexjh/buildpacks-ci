@@ -1,4 +1,6 @@
 ---
+- 'USN-3128-2: Linux kernel (Xenial HWE) vulnerability'
+- 'USN-3127-1: Linux kernel vulnerabilities'
 - 'USN-3125-1: QEMU vulnerabilities'
 - 'USN-3122-1: NVIDIA graphics drivers vulnerabilities'
 - 'USN-3120-1: Memcached vulnerabilities'
