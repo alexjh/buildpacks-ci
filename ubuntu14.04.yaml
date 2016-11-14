@@ -1,1 +1,9 @@
 ---
+- title: 'USN-3123-1: curl vulnerabilities'
+  stack_release: unreleased
+- title: 'USN-3119-1: Bind vulnerability'
+  stack_release: unreleased
+- title: 'USN-3117-1: GD library vulnerabilities'
+  stack_release: unreleased
+- title: 'USN-3116-1: DBus vulnerabilities'
+  stack_release: unreleased
