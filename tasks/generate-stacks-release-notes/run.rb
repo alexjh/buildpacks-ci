@@ -22,7 +22,7 @@ else
   raise "Unsupported stack: #{ENV['STACK']}"
 end
 
-cve_yaml_file = 'new-cves/ubuntu14.04.yml'
+cve_yaml_file = 'new-cves/ubuntu14.04.yaml'
 new_receipt_file = 'stacks/cflinuxfs2/cflinuxfs2_receipt'
 old_receipt_file = open(old_receipt_uri)
 
@@ -43,7 +43,7 @@ end
 File.write(cve_yaml_file, updated_cves.to_yaml)
 
 Dir.chdir('new-cves') do
-  GitClient.add_file('ubuntu14.04.yml')
+  GitClient.add_file('ubuntu14.04.yaml')
   commit_message = "Updating CVEs for #{ENV['STACK']} release #{new_version}\n\n[ci skip]"
   GitClient.safe_commit(commit_message)
 end

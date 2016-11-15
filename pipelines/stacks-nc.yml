@@ -26,7 +26,7 @@ resources: #####################################################################
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: use-ubuntu-yaml
 
   - name: stacks
     type: git
