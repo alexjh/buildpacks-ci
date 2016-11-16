@@ -70,7 +70,7 @@ jobs:
           repository: gem-artifacts
           tag: gem-artifacts/VERSION
           tag_prefix: v
-  - name: buildpack-packager-release
+  - name: buildpack-packager-release-to-github
     serial: true
     public: true
     plan:
@@ -93,6 +93,25 @@ jobs:
           globs:
             - gem-artifacts/buildpack-packager-v*.zip
             - gem-artifacts/buildpack-packager-v*.tar.gz
+
+  - name: buildpack-packager-release-to-rubygems
+    serial: true
+    public: true
+    plan:
+      - aggregate:
+        - get: buildpacks-ci
+        - get: gem
+          passed: [ buildpack-packager-release-to-github ]
+          resource: buildpack-packager
+          trigger: true
+      - task: create-new-buildpack-packager-rubygems-release
+        file: buildpacks-ci/tasks/create-rubygems-release/task.yml
+        privileged: true
+        params:
+          RUBYGEM_MIRROR: {{rubygem-mirror}}
+          GEM_NAME: buildpack-packager
+          RUBYGEMS_ORG_API_KEY: {{cf-rubygems-org-api-key}}
+
   - name: machete-specs
     serial: true
     public: true
