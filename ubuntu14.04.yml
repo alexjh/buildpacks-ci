@@ -1,4 +1,6 @@
 ---
+- title: 'USN-3131-1: ImageMagick vulnerabilities'
+  stack_release: unreleased
 - title: 'USN-3123-1: curl vulnerabilities'
   stack_release: 1.90.0
 - title: 'USN-3119-1: Bind vulnerability'
@@ -147,4 +149,3 @@
   stack_release: 1.90.0
 - title: 'USN-2783-1: NTP vulnerabilities'
   stack_release: 1.90.0
-
