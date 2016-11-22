@@ -27,7 +27,7 @@ cats_config = {
   "keep_user_at_suite_end" => false,
   "skip_ssl_validation" => true,
   "use_existing_user" => false,
-  "use_http" => true,
+  "use_http" => false,
   "verbose" => false
 }
 
