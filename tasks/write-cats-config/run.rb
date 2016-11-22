@@ -2,31 +2,33 @@
 
 require 'json'
 
-
 admin_user = ENV['CI_CF_USERNAME']
 admin_password = ENV['CI_CF_PASSWORD']
 apps_domain = ENV['APPS_DOMAIN']
 diego_docker_on = ENV['DIEGO_DOCKER_ON']
 
 cats_config = {
-  "admin_user" => admin_user,
   "admin_password" => admin_password,
+  "admin_user" => admin_user,
   "api" => "api.#{apps_domain}",
   "apps_domain" => apps_domain,
-  "skip_ssl_validation" => true,
-  "verbose" => false,
-  "include_sso" => false,
-  "include_security_groups" => true,
-  "include_internet_dependent" => true,
-  "include_services" => true,
-  "include_v3" => false,
-  "include_routing" => false,
+  'async_service_operation_timeout' => 5,
   "backend" => "diego",
-  "use_http" => true,
+  'cf_push_timeout' => 5,
+  'default_timeout' => 120,
   "enable_color" => true,
+  "include_internet_dependent" => true,
+  "include_routing" => false,
+  "include_security_groups" => true,
+  "include_services" => true,
   "include_ssh" => true,
+  "include_sso" => false,
+  "include_v3" => false,
+  "keep_user_at_suite_end" => false,
+  "skip_ssl_validation" => true,
   "use_existing_user" => false,
-  "keep_user_at_suite_end" => false
+  "use_http" => true,
+  "verbose" => false
 }
 
 if diego_docker_on == 'true'
