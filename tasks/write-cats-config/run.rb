@@ -29,7 +29,7 @@ cats_config = {
 
 if diego_docker_on == 'true'
   exit 1 unless system "cf api api.#{apps_domain} --skip-ssl-validation"
-  exit 1 unless system "cf login -u #{admin_user} -p #{admin_password}"
+  exit 1 unless system "echo \"\" | cf login -u #{admin_user} -p #{admin_password}"
   exit 1 unless system "cf enable-feature-flag diego_docker"
   cats_config['include_docker'] = true
 end
