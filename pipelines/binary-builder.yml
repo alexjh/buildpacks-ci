@@ -68,27 +68,6 @@ resources: #####################################################################
       paths: [ <%= auto_new %>-new.yml ]
 <% end %>
 
-<% %w(go dotnet-core nodejs ruby php staticfile).each do |language| %>
-  - name: <%= language %>-buildpack
-    type: git
-    source:
-      uri: git@github.com:<%= organization %>/<%= language %>-buildpack.git
-      private_key: {{<%= language %>-buildpack-private-key}}
-      branch: develop
-      ignore_paths:
-        - VERSION
-        - CHANGELOG
-<% end %>
-
-  ## Resource Pools ##
-
-  - name: cf-edge-environments
-    type: pool
-    source:
-      branch: resource-pools
-      pool: cf-edge-gcp-environments
-      private_key: {{buildpacks-ci-private-key}}
-      uri: {{buildpacks-ci-git-uri}}
 
   ## Concourse2Tracker ##
 
@@ -121,11 +100,6 @@ groups: ########################################################################
     jobs:
 <% %w(bower composer dotnet glide godep nginx node).each do |auto_dep| %>
     - build-<%= auto_dep %>
-<% end %>
-<% {go: ["godep", "glide"], staticfile: ["nginx"], php: ["nginx", "composer"], nodejs: ["node"], ruby: ["node"], 'dotnet-core' => ['dotnet', 'node', 'bower'] }.each do |buildpack, dependencies| %>
-  <% dependencies.each do |dependency| %>
-    - update-<%= dependency %>-in-<%= buildpack %>-buildpack
-  <% end %>
 <% end %>
 
   - name: manual-builds
@@ -308,62 +282,4 @@ jobs: ##########################################################################
             channel: {{concourse-job-failure-notifications-slack-channel}}
             username: concourse
             icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-<% end %>
-
-<% {go: ["godep", "glide"], staticfile: ["nginx"], php: ["nginx", "composer"], nodejs: ["node"], ruby: ["node"], 'dotnet-core' => ['dotnet', 'node', 'bower']}.each do |buildpack, dependencies| %>
-  <% dependencies.each do |dependency| %>
-  - name: update-<%= dependency %>-in-<%= buildpack %>-buildpack
-    serial: true
-    public: true
-    plan:
-      - do:
-        - aggregate:
-          - get: buildpacks-ci
-          - get: buildpack
-            resource: <%= buildpack %>-buildpack
-          - get: built-out
-            resource: <%= dependency %>-built-output
-            passed: [ build-<%= dependency %> ]
-            version: every
-            trigger: true
-        - task: update-dependency-in-manifests
-          file: buildpacks-ci/tasks/update-dependency-in-buildpack/task.yml
-          params:
-            BUILDPACK_NAME: <%= buildpack %>
-            DEPENDENCY: <%= dependency %>
-            TRACKER_PROJECT_ID: {{cf-buildpacks-public-tracker-id}}
-            TRACKER_API_TOKEN: {{pivotal-tracker-api-token}}
-            TRACKER_REQUESTER_ID: {{cf-buildpacks-requester-id}}
-            BUILDPACK_DEPENDENCIES_HOST_DOMAIN: {{buildpack-dependencies-host-domain}}
-            BOSH_LITE_DOMAIN_NAME: {{bosh-lite-domain-name}}
-        - put: cf-environments
-          resource: cf-edge-environments
-          params:
-            acquire: true
-        - do:
-          - task: rspec
-            file: buildpacks-ci/tasks/run-buildpack-specs-before-auto-update/task.yml
-            privileged: true
-            params:
-              STACKS: cflinuxfs2
-              COMPOSER_GITHUB_OAUTH_TOKEN: {{composer-github-oauth-token}}
-              CF_PASSWORD: {{ci-cf-password}}
-              RUBYGEM_MIRROR: {{rubygem-mirror}}
-              BOSH_LITE_DOMAIN_NAME: {{bosh-lite-domain-name}}
-          - put: <%= buildpack %>-buildpack
-            params:
-              repository: buildpack-artifacts
-              rebase: true
-          ensure:
-            put: cf-edge-environments
-            params:
-              release: cf-environments
-        on_failure:
-          put: failure-alert
-          params:
-            text: "$BUILD_PIPELINE_NAME $BUILD_JOB_NAME job on Concourse failed! \n Check: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
-            channel: {{concourse-job-failure-notifications-slack-channel}}
-            username: concourse
-            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-  <% end %>
 <% end %>
