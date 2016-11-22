@@ -285,7 +285,7 @@ jobs:
         - task: cats
           file: runtime-ci/scripts/ci/run-cats/task.yml
           params:
-            NODES: 1
+            NODES: 12
             CONFIG_FILE_PATH: integration_config.json
         on_failure:
           put: failure-alert
