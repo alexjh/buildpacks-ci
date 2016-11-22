@@ -248,6 +248,8 @@ jobs:
         - get: buildpacks-ci
         - get: runtime-ci
         - get: cf-release
+          params:
+            submodules: [ src/github.com/cloudfoundry/cf-acceptance-tests/ ]
           passed: [ deploy-cf-and-diego-to-cf-release ]
         - get: deployments-buildpacks
           passed: [ deploy-cf-and-diego-to-cf-release ]
@@ -285,7 +287,7 @@ jobs:
         - task: cats
           file: runtime-ci/scripts/ci/run-cats/task.yml
           params:
-            NODES: 12
+            NODES: 4
             CONFIG_FILE_PATH: integration_config.json
         on_failure:
           put: failure-alert
