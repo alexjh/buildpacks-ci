@@ -9,6 +9,8 @@ apps_domain = ENV['APPS_DOMAIN']
 diego_docker_on = ENV['DIEGO_DOCKER_ON']
 
 cats_config = {
+  "admin_user" => admin_user,
+  "admin_password" => admin_password,
   "api" => "api.#{apps_domain}",
   "apps_domain" => apps_domain,
   "skip_ssl_validation" => true,
@@ -34,9 +36,6 @@ if diego_docker_on == 'true'
   cats_config['include_docker'] = true
 end
 
-puts "Using CATS config: #{cats_config.to_json.gsub(':', ': ').gsub(',', ",\n")}"
+puts "Writing CATS config to integration-config/integration_config.json"
 
-cats_config["admin_user"] = admin_user
-cats_config["admin_password"] = admin_password
-
-File.write('integration-config/integration_config.json', cats_config.to_json)
+File.write('integration-config/integration_config.json', JSON.pretty_generate(cats_config))
