@@ -1,4 +1,6 @@
 ---
+- title: 'USN-3137-1: MoinMoin vulnerabilities'
+  stack_release: unreleased
 - title: 'USN-3136-1: LXC vulnerability'
   stack_release: unreleased
 - title: 'USN-3135-1: GStreamer Good Plugins vulnerability'
