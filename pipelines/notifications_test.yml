@@ -10,22 +10,43 @@ resources:
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch:  {{buildpacks-ci-git-uri-public-branch}}
+      branch: hack-day
   - name: bundler
     type: new_version_resource_test
     source:
       type: git
+      regex: 'v[\d\.]+[0-9A-Za-z\-]*'
       git:
         organization: bundler
         repo: bundler
+  - name: composer
+    type: new_version_resource_test
+    source:
+      type: git
+      regex: '[\d\.]+[0-9A-Za-z\-]*'
+      git:
+        organization: composer
+        repo: composer
+  - name: nginx
+    type: new_version_resource_test
+    source:
+      type: git
+      regex: '[\d\.]+[0-9A-Za-z\-]*'
+      git:
+        organization: nginx
+        repo: nginx
 
 jobs:
-  - name: new version checker
+  - name: new-version-checker
     serial: true
     plan:
       - aggregate:
         - get: buildpacks-ci
         - get: bundler
+          trigger: true
+        - get: composer
+          trigger: true
+        - get: nginx
           trigger: true
       - task: test-new-versions
         file: buildpacks-ci/tasks/test-new-versions/task.yml
