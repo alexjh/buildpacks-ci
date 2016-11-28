@@ -580,7 +580,7 @@ jobs: ##########################################################################
           params:
             CI_CF_USERNAME: {{ci-cf-username}}
             CI_CF_PASSWORD: {{ci-cf-password}}
-            APPS_DOMAIN: cf-release.buildpacks-gcp.ci.cf-app.com
+            APPS_DOMAIN: stacks.buildpacks-gcp.ci.cf-app.com
             DIEGO_DOCKER_ON: true
         - task: cats
           file: runtime-ci/scripts/ci/run-cats/task.yml
