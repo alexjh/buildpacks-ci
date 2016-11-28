@@ -1,0 +1,16 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: cfbuildpacks/ci
+inputs:
+  - name: bundler
+run:
+  path: bash
+  args:
+    - '-c'
+    - |
+      echo "Contents of bundler/url"
+      cat bundler/url
+

@@ -1,0 +1,31 @@
+---
+resource_types:
+  - name: new_version_resource_test
+    type: docker-image
+    source:
+      repository: cfbuildpacks/new_version_resource_test
+
+resources:
+  - name: buildpacks-ci
+    type: git
+    source:
+      uri: {{buildpacks-ci-git-uri-public}}
+      branch:  {{buildpacks-ci-git-uri-public-branch}}
+  - name: bundler
+    type: new_version_resource_test
+    source:
+      type: git
+      git:
+        organization: bundler
+        repo: bundler
+
+jobs:
+  - name: new version checker
+    serial: true
+    plan:
+      - aggregate:
+        - get: buildpacks-ci
+        - get: bundler
+          trigger: true
+      - task: test-new-versions
+        file: buildpacks-ci/tasks/test-new-versions/task.yml
