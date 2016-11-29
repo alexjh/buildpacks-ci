@@ -1,4 +1,6 @@
 ---
+- title: 'USN-3139-1: Vim vulnerability'
+  stack_release: unreleased
 - title: 'USN-3134-1: Python vulnerabilities'
   stack_release: unreleased
 - title: 'USN-3132-1: tar vulnerability'
