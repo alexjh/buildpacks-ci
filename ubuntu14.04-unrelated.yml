@@ -1,4 +1,6 @@
 ---
+- title: 'USN-3133-1: Oxide vulnerabilities'
+  stack_release: unreleased
 - title: 'USN-3141-1: Thunderbird vulnerabilities'
   stack_release: unreleased
 - title: 'USN-3140-1: Firefox vulnerabilities'
