@@ -241,7 +241,24 @@ describe NewReleasesDetector do
         it_behaves_like 'there are new versions to potentially build'
       end
 
-      xcontext 'when there are no new releases' do
+      context 'when there are no new releases' do
+        let(:new_releases_response)   { double('new_releases_response', read: miniconda_releases_html ) }
+        let(:miniconda_releases_html) { <<~HTML
+                                        <table>
+                                          <tr>
+                                            <td>
+                                              <a href="http://example.com/Miniconda2-4.44.44-Linux-x86_64.sh">Miniconda2-5.55.55-Linux-x86_64.sh</a>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td>
+                                              <a href="http://example.com/Miniconda2-3.33.33-Linux-x86_64.sh">Miniconda99-4.44.44-Linux-x86_64.sh</a>
+                                            </td>
+                                          </tr>
+                                        </table>
+        HTML
+        }
+
 
         it_behaves_like 'there are no new versions to potentially build'
       end
