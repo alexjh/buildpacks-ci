@@ -1,0 +1,11 @@
+networks:
+- name: public
+  type: manual
+  subnets:
+  - range: 10.150.0.0/24
+    gateway: 10.150.0.1
+compilation:
+  workers: 8
+  network: public
+vm_types:
+- name: stub-needed-to-make-bosh-deploy

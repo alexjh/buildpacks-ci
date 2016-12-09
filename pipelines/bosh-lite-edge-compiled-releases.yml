@@ -1,0 +1,161 @@
+resources:
+  - name: deployments-buildpacks
+    type: git
+    source:
+      uri: {{deployments-git-uri}}
+      private_key: {{deployments-private-key}}
+      branch: master
+  - name: buildpacks-ci
+    type: git
+    source:
+      uri: {{buildpacks-ci-git-uri-public}}
+      branch: bosh-lites-precompiled-releases
+  - name: cflinuxfs2-rootfs-bosh-release
+    type: bosh-io-release
+    tarball: true
+    source:
+      repository: cloudfoundry/cflinuxfs2-rootfs-release
+  - name: cf-bosh-release
+    type: bosh-io-release
+    tarball: true
+    source:
+      repository: cloudfoundry/cf-release
+  - name: diego-bosh-release
+    type: bosh-io-release
+    tarball: true
+    source:
+      repository: cloudfoundry/diego-release
+  - name: garden-runc-bosh-release
+    type: bosh-io-release
+    tarball: true
+    source:
+      repository: cloudfoundry/garden-runc-release
+  - name: bosh-stemcell
+    type: bosh-io-stemcell
+    source:
+      name: bosh-warden-boshlite-ubuntu-trusty-go_agent
+
+  ### Compiled Releases on S3
+  - name: bosh-lite-edge-cf-compiled-release-s3
+    type: s3
+    source:
+      bucket: pivotal-buildpacks
+      versioned_file: bosh-lite/precompiled-releases/edge/compiled-cf-release.tgz
+      access_key_id: {{pivotal-buildpacks-s3-access-key}}
+      secret_access_key: {{pivotal-buildpacks-s3-secret-key}}
+  - name: bosh-lite-edge-diego-compiled-release-s3
+    type: s3
+    source:
+      bucket: pivotal-buildpacks
+      versioned_file: bosh-lite/precompiled-releases/edge/compiled-diego-release.tgz
+      access_key_id: {{pivotal-buildpacks-s3-access-key}}
+      secret_access_key: {{pivotal-buildpacks-s3-secret-key}}
+  - name: bosh-lite-edge-garden-runc-compiled-release-s3
+    type: s3
+    source:
+      bucket: pivotal-buildpacks
+      versioned_file: bosh-lite/precompiled-releases/edge/compiled-garden-runc-release.tgz
+      access_key_id: {{pivotal-buildpacks-s3-access-key}}
+      secret_access_key: {{pivotal-buildpacks-s3-secret-key}}
+  - name: bosh-lite-edge-cflinuxfs2-rootfs-compiled-release-s3
+    type: s3
+    source:
+      bucket: pivotal-buildpacks
+      versioned_file: bosh-lite/precompiled-releases/edge/compiled-cflinuxfs2-rootfs-release.tgz
+      access_key_id: {{pivotal-buildpacks-s3-access-key}}
+      secret_access_key: {{pivotal-buildpacks-s3-secret-key}}
+
+jobs:
+  - name: recreate-bosh-lite
+    serial_groups: [ compile ]
+    serial: true
+    public: true
+    plan:
+      - do:
+        - aggregate:
+          - get: buildpacks-ci
+          - get: deployments-buildpacks
+        - task: recreate-bosh-lite
+          file: buildpacks-ci/tasks/recreate-bosh-lite/task.yml
+          params:
+            IAAS: gcp
+            GCP_BOSH_DIRECTOR_USER: {{gcp_bosh_admin_user}}
+            GCP_BOSH_DIRECTOR_PASSWORD: {{gcp_bosh_admin_password}}
+            GCP_BOSH_LITE_NAME: edge-1-gcp-bosh-lite
+            DEPLOYMENT_NAME: edge-1.buildpacks-gcp.ci
+            BOSH_USER: {{bosh_user}}
+            BOSH_PASSWORD: {{gcp_bosh_lite_admin_password}}
+            BOSH_TARGET: edge-1.buildpacks-gcp.ci.cf-app.com
+            BOSH_LITE_NAME: edge-1.buildpacks-gcp.ci
+            RUBYGEM_MIRROR: {{rubygem-mirror}}
+            BOSH_LITE_DOMAIN_NAME: {{bosh-lite-domain-name}}
+            BOSH_LITE_ADMIN_PASSWORD: {{gcp_bosh_lite_admin_password}}
+            BOSH_LITE_HM_PASSWORD: {{gcp_bosh_lite_hm_password}}
+            BOSH_LITE_NATS_PASSWORD: {{gcp_bosh_lite_nats_password}}
+            BOSH_LITE_BLOBSTORE_AGENT_PASSWORD: {{gcp_bosh_lite_blobstore_agent_password}}
+            BOSH_LITE_BLOBSTORE_DIRECTOR_PASSWORD: {{gcp_bosh_lite_blobstore_director_password}}
+            BOSH_LITE_POSTGRES_PASSWORD: {{gcp_bosh_lite_postgres_password}}
+          ensure:
+            put: deployments-buildpacks
+            params:
+              repository: deployments-buildpacks-artifacts
+              rebase: true
+  - name: generate-precompiled-releases
+    serial_groups: [ compile ]
+    serial: true
+    public: true
+    plan:
+      - do:
+        - aggregate:
+          - get: buildpacks-ci
+            passed: [ recreate-bosh-lite ]
+            trigger: true
+          - get: bosh-stemcell
+          - get: cf-bosh-release
+          - get: diego-bosh-release
+          - get: garden-runc-bosh-release
+          - get: cflinuxfs2-rootfs-bosh-release
+        - task: generate-precompiled-releases
+          file: buildpacks-ci/tasks/generate-bosh-lite-edge-compiled-releases/task.yml
+          params:
+            BOSH_TARGET: edge-1.buildpacks-gcp.ci.cf-app.com
+            BOSH_USER: {{bosh_user}}
+            BOSH_PASSWORD: {{gcp_bosh_lite_admin_password}}
+        - put: bosh-lite-edge-cf-compiled-release-s3
+          params:
+            file: compiled-releases/cf.tgz
+        - put: bosh-lite-edge-diego-compiled-release-s3
+          params:
+            file: compiled-releases/diego.tgz
+        - put: bosh-lite-edge-garden-runc-compiled-release-s3
+          params:
+            file: compiled-releases/garden-runc.tgz
+        - put: bosh-lite-edge-cflinuxfs2-rootfs-compiled-release-s3
+          params:
+            file: compiled-releases/cflinuxfs2-rootfs.tgz
+  - name: destroy-bosh-lite
+    serial: true
+    public: true
+    serial_groups: [ compile ]
+    plan:
+      - aggregate:
+        - get: buildpacks-ci
+          passed: [ generate-precompiled-releases ]
+          trigger: true
+        - get: deployments-buildpacks
+      - task: destroy-bosh-lite
+        file: buildpacks-ci/tasks/destroy-bosh-lite/task.yml
+        params:
+          DEPLOYMENT_NAME: edge-1.buildpacks-gcp.ci
+          GCP_BOSH_LITE_NAME: edge-1-gcp-bosh-lite
+          BOSH_USER: {{gcp_bosh_admin_user}}
+          BOSH_PASSWORD: {{gcp_bosh_admin_password}}
+          GCP_BOSH_DIRECTOR_USER: {{gcp_bosh_admin_user}}
+          GCP_BOSH_DIRECTOR_PASSWORD: {{gcp_bosh_admin_password}}
+          BOSH_LITE_NAME: edge-1.buildpacks-gcp.ci
+          RUBYGEM_MIRROR: {{rubygem-mirror}}
+          BOSH_LITE_DOMAIN_NAME: {{bosh-lite-domain-name}}
+          IAAS: gcp
+        attempts: 5
+
+

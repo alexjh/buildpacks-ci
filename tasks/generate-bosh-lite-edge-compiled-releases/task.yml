@@ -1,0 +1,25 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: cfbuildpacks/ci
+
+inputs:
+  - name: buildpacks-ci
+  - name: bosh-stemcell
+  - name: cf-bosh-release
+  - name: diego-bosh-release
+  - name: garden-runc-bosh-release
+  - name: cflinuxfs2-rootfs-bosh-release
+outputs:
+  - name: compiled-releases
+run:
+  path: bash
+  args:
+    - -cl
+    - buildpacks-ci/tasks/generate-bosh-lite-edge-compiled-releases/run.rb
+params:
+  BOSH_TARGET:
+  BOSH_USER:
+  BOSH_PASSWORD:
