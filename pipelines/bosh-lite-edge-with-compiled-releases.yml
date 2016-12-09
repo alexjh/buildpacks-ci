@@ -1,0 +1,217 @@
+resources:
+  - name: cf-deployment
+    type: bosh-deployment
+    source:
+      target: https://edge-1.buildpacks-gcp.ci.cf-app.com:25555
+      username: admin
+      password: {{gcp_bosh_lite_admin_password}}
+      deployment: cf-warden
+      ignore_ssl: true
+  - name: diego-deployment
+    type: bosh-deployment
+    source:
+      target: https://edge-1.buildpacks-gcp.ci.cf-app.com:25555
+      username: admin
+      password: {{gcp_bosh_lite_admin_password}}
+      deployment: cf-warden-diego
+      ignore_ssl: true
+  - name: deployments-buildpacks
+    type: git
+    source:
+      uri: {{deployments-git-uri}}
+      private_key: {{deployments-private-key}}
+      branch: master
+  - name: bosh-lite
+    type: git
+    source:
+      uri: https://github.com/cloudfoundry/bosh-lite
+  - name: buildpacks-ci
+    type: git
+    source:
+      uri: {{buildpacks-ci-git-uri-public}}
+      branch: {{buildpacks-ci-git-uri-public-branch}}
+  - name: machete
+    type: git
+    source:
+      uri: {{machete-git-uri-public}}
+      branch: master
+  - name: bosh-stemcell
+    type: bosh-io-stemcell
+    source:
+      name: bosh-warden-boshlite-ubuntu-trusty-go_agent
+  - name: cf-bosh-release
+    type: bosh-io-release
+    tarball: true
+    source:
+      repository: cloudfoundry/cf-release
+  - name: diego-bosh-release
+    type: bosh-io-release
+    tarball: true
+    source:
+      repository: cloudfoundry/diego-release
+
+  ### Compiled Releases on S3
+  - name: compiled-cf-bosh-release
+    type: s3
+    source:
+      bucket: pivotal-buildpacks
+      versioned_file: bosh-lite/precompiled-releases/edge/compiled-cf-release.tgz
+      access_key_id: {{pivotal-buildpacks-s3-access-key}}
+      secret_access_key: {{pivotal-buildpacks-s3-secret-key}}
+  - name: compiled-diego-bosh-release
+    type: s3
+    source:
+      bucket: pivotal-buildpacks
+      versioned_file: bosh-lite/precompiled-releases/edge/compiled-diego-release.tgz
+      access_key_id: {{pivotal-buildpacks-s3-access-key}}
+      secret_access_key: {{pivotal-buildpacks-s3-secret-key}}
+  - name: compiled-garden-runc-bosh-release
+    type: s3
+    source:
+      bucket: pivotal-buildpacks
+      versioned_file: bosh-lite/precompiled-releases/edge/compiled-garden-runc-release.tgz
+      access_key_id: {{pivotal-buildpacks-s3-access-key}}
+      secret_access_key: {{pivotal-buildpacks-s3-secret-key}}
+  - name: compiled-cflinuxfs2-rootfs-bosh-release
+    type: s3
+    source:
+      bucket: pivotal-buildpacks
+      versioned_file: bosh-lite/precompiled-releases/edge/compiled-cflinuxfs2-rootfs-release.tgz
+      access_key_id: {{pivotal-buildpacks-s3-access-key}}
+      secret_access_key: {{pivotal-buildpacks-s3-secret-key}}
+
+jobs:
+  - name: recreate-bosh-lite
+    serial_groups: [ deploy ]
+    serial: true
+    public: true
+    plan:
+      - do:
+        - aggregate:
+          - get: buildpacks-ci
+          - get: deployments-buildpacks
+        - task: recreate-bosh-lite
+          file: buildpacks-ci/tasks/recreate-bosh-lite/task.yml
+          params:
+            IAAS: gcp
+            GCP_BOSH_DIRECTOR_USER: {{gcp_bosh_admin_user}}
+            GCP_BOSH_DIRECTOR_PASSWORD: {{gcp_bosh_admin_password}}
+            GCP_BOSH_LITE_NAME: edge-1-gcp-bosh-lite
+            DEPLOYMENT_NAME: edge-1.buildpacks-gcp.ci
+            BOSH_USER: {{bosh_user}}
+            BOSH_PASSWORD: {{gcp_bosh_lite_admin_password}}
+            BOSH_TARGET: edge-1.buildpacks-gcp.ci.cf-app.com
+            BOSH_LITE_NAME: edge-1.buildpacks-gcp.ci
+            RUBYGEM_MIRROR: {{rubygem-mirror}}
+            BOSH_LITE_DOMAIN_NAME: {{bosh-lite-domain-name}}
+            BOSH_LITE_ADMIN_PASSWORD: {{gcp_bosh_lite_admin_password}}
+            BOSH_LITE_HM_PASSWORD: {{gcp_bosh_lite_hm_password}}
+            BOSH_LITE_NATS_PASSWORD: {{gcp_bosh_lite_nats_password}}
+            BOSH_LITE_BLOBSTORE_AGENT_PASSWORD: {{gcp_bosh_lite_blobstore_agent_password}}
+            BOSH_LITE_BLOBSTORE_DIRECTOR_PASSWORD: {{gcp_bosh_lite_blobstore_director_password}}
+            BOSH_LITE_POSTGRES_PASSWORD: {{gcp_bosh_lite_postgres_password}}
+          ensure:
+            put: deployments-buildpacks
+            params:
+              repository: deployments-buildpacks-artifacts
+              rebase: true
+  - name: generate-manifest
+    serial_groups: [ deploy ]
+    serial: true
+    public: true
+    plan:
+      - do:
+        - aggregate:
+          - get: deployments-buildpacks
+            passed: ['recreate-bosh-lite']
+            trigger: true
+          - get: buildpacks-ci
+          - get: bosh-lite
+          - get: cf-bosh-release
+            params:
+              tarball: false
+          - get: diego-bosh-release
+            params:
+              tarball: false
+        - aggregate:
+          - task: cf-release-checkout
+            file: buildpacks-ci/tasks/checkout-cf-release/task.yml
+          - task: diego-release-checkout
+            file: buildpacks-ci/tasks/checkout-diego-release/task.yml
+        - task: generate-manifest
+          file: buildpacks-ci/tasks/generate-cf-and-diego-manifests/task.yml
+          params:
+            DEPLOYMENT_NAME: edge-1.buildpacks-gcp.ci
+            CI_CF_PASSWORD: {{ci-cf-password}}
+            BOSH_USER: {{bosh_user}}
+            BOSH_PASSWORD: {{gcp_bosh_lite_admin_password}}
+            BOSH_TARGET: edge-1.buildpacks-gcp.ci.cf-app.com
+            BOSH_LITE_NAME: edge-1.buildpacks-gcp.ci
+            RUBYGEM_MIRROR: {{rubygem-mirror}}
+            BOSH_LITE_DOMAIN_NAME: {{bosh-lite-domain-name}}
+            ROOTFS_RELEASE: cflinuxfs2-rootfs
+          privileged: true
+        - put: deployments-buildpacks
+          params:
+            repository: generate-manifest-artifacts
+            rebase: true
+  - name: deploy-cf
+    serial_groups: [ deploy ]
+    serial: true
+    public: true
+    plan:
+      - do:
+        - aggregate:
+          - get: deployments-buildpacks
+            passed: ['generate-manifest']
+            trigger: true
+          - get: buildpacks-ci
+          - get: bosh-stemcell
+          - get: compiled-cf-bosh-release
+        - put: cf-deployment
+          params:
+            manifest: deployments-buildpacks/deployments/edge-1.buildpacks-gcp.ci/manifest.yml
+            stemcells: ['bosh-stemcell/stemcell.tgz']
+            releases:
+              - compiled-cf-bosh-release/compiled-cf-release.tgz
+  - name: deploy-diego
+    serial_groups: [ deploy ]
+    serial: true
+    public: true
+    plan:
+      - do:
+        - aggregate:
+          - get: deployments-buildpacks
+            passed: ['deploy-cf']
+            trigger: true
+          - get: buildpacks-ci
+          - get: bosh-stemcell
+          - get: compiled-cflinuxfs2-rootfs-bosh-release
+          - get: compiled-diego-bosh-release
+          - get: compiled-garden-runc-bosh-release
+        - put: diego-deployment
+          params:
+            manifest: deployments-buildpacks/deployments/edge-1.buildpacks-gcp.ci/diego.yml
+            stemcells: ['bosh-stemcell/stemcell.tgz']
+            releases:
+              - compiled-cflinuxfs2-rootfs-bosh-release/compiled-cflinuxfs2-rootfs-release.tgz
+              - compiled-diego-bosh-release/compiled-diego-release.tgz
+              - compiled-garden-runc-bosh-release/compiled-garden-runc-release.tgz
+  - name: update-machete
+    serial_groups: [ deploy ]
+    serial: true
+    public: true
+    plan:
+      - do:
+        - aggregate:
+          - get: buildpacks-ci
+          - get: deployments-buildpacks
+            passed: ['deploy-diego']
+            trigger: true
+          - get: machete
+        - task: configure-deployment
+          file: buildpacks-ci/tasks/machete-configure-deployment/task.yml
+          params:
+            BOSH_TARGET: edge-1.buildpacks-gcp.ci.cf-app.com
+            CI_CF_PASSWORD: {{ci-cf-password}}
+            CI_CF_USERNAME: {{ci-cf-username}}
