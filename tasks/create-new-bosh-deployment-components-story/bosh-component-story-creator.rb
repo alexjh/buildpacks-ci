@@ -2,9 +2,11 @@
 
 require 'yaml'
 require 'tracker_api'
-require_relative "#{__dir__}/../../lib/git-client"
+require_relative '../../lib/git-client'
 
 class BoshComponentStoryCreator
+  attr_reader :components, :up_to_date, :new_versions
+
   def initialize
     @components = %w(bosh-lite-stemcell gcp-stemcell bosh garden-runc concourse gcp-cpi)
     @up_to_date = []
@@ -12,41 +14,36 @@ class BoshComponentStoryCreator
   end
 
   def run!
-    Dir.chdir('public-buildpacks-ci-robots') do
-      @components.each do |component|
-        known_versions = YAML.load_file(known_versions_yml_file(component))
+    components.each do |component|
+      known_versions_file = File.join('public-buildpacks-ci-robots', 'bosh-deployment-components', "#{component}-versions.yml")
+      known_versions = YAML.load_file(known_versions_file)
 
-        newest_version = File.read(File.join('..', component,'version')).strip
+      newest_version = File.read(File.join(component,'version')).strip
 
-        if known_versions.include? newest_version
-          @up_to_date.push component
-        else
-          @new_versions[component] = newest_version
-        end
+      if known_versions.include? newest_version
+        up_to_date.push component
+      else
+        new_versions[component] = newest_version
       end
+    end
 
-      display_up_to_date_versions if @up_to_date.any?
+    display_up_to_date_versions if up_to_date.any?
 
-      display_new_versions if @new_versions.any?
+    display_new_versions if new_versions.any?
 
-      @new_versions.each do |component, version|
-        create_tracker_story(display_name(component), version)
-        update_versions_yml(component, version)
-      end
+    new_versions.each do |component, version|
+      create_tracker_story(display_name(component), version)
+      update_versions_yml(component, version)
     end
   end
 
   private
 
-  def known_versions_yml_file(component)
-    File.join('bosh-deployment-components', "#{component}-versions.yml")
-  end
-
   def display_up_to_date_versions
     puts "\n"
     puts "The following are up-to-date:"
 
-    @up_to_date.each do |component|
+    up_to_date.each do |component|
       puts "- #{display_name(component)}"
     end
     puts "\n"
@@ -54,9 +51,9 @@ class BoshComponentStoryCreator
 
   def display_new_versions
     puts "\n"
-    puts "*** New versions detected ***" if @new_versions.any?
+    puts "*** New versions detected ***" if new_versions.any?
 
-    @new_versions.each do |component, version|
+    new_versions.each do |component, version|
       puts "- #{display_name(component)} => #{version}"
     end
     puts "\n"
@@ -92,13 +89,16 @@ class BoshComponentStoryCreator
   end
 
   def update_versions_yml(component, version)
-    known_versions = YAML.load_file(known_versions_yml_file(component))
+    Dir.chdir('public-buildpacks-ci-robots') do
+      known_versions_file = File.join('bosh-deployment-components', "#{component}-versions.yml")
+      known_versions = YAML.load_file(known_versions_file)
 
-    known_versions.push version
+      known_versions.push version
 
-    File.write(known_versions_yml_file(component), known_versions.to_yaml)
+      File.write(known_versions_file, known_versions.to_yaml)
 
-    GitClient.add_file(known_versions_yml_file(component))
-    GitClient.safe_commit("Detected new version of #{display_name(component)}: #{version}")
+      GitClient.add_file(known_versions_file)
+      GitClient.safe_commit("Detected new version of #{display_name(component)}: #{version}")
+    end
   end
 end
