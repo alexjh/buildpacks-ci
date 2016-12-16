@@ -187,7 +187,7 @@ jobs:
             manifest: deployments-buildpacks/deployments/cf-release.buildpacks-gcp.ci/diego.yml
             stemcells: ['lite-stemcell/stemcell.tgz']
             releases:
-              - diego-release-artifacts/dev_releases/diego/release.tgz
+              - diego-release-artifacts/dev_releases/diego/*.tgz
               - cflinuxfs2-rootfs-bosh-release/release.tgz
               - garden-runc-bosh-release/release.tgz
 
