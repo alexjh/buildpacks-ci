@@ -180,12 +180,14 @@ jobs:
             manifest: deployments-buildpacks/deployments/cf-release.buildpacks-gcp.ci/manifest.yml
             stemcells: [lite-stemcell/*.tgz]
             releases: [cf-release-artifacts/dev_releases/cf/*.tgz]
+        - task: create-diego-release
+          file: buildpacks-ci/tasks/create-diego-bosh-release-to-deploy/task.yml
         - put: cf-release-diego-deployment
           params:
             manifest: deployments-buildpacks/deployments/cf-release.buildpacks-gcp.ci/diego.yml
             stemcells: ['lite-stemcell/stemcell.tgz']
             releases:
-              - diego-bosh-release/release.tgz
+              - diego-release-artifacts/dev_releases/diego/release.tgz
               - cflinuxfs2-rootfs-bosh-release/release.tgz
               - garden-runc-bosh-release/release.tgz
 
