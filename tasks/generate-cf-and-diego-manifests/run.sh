@@ -51,6 +51,7 @@ jobs:
 
   ./scripts/generate-bosh-lite-dev-manifest bosh-lite/cf-stub-spiff-ours.yml
 
+  ../buildpacks-ci/tasks/generate-cf-and-diego-manifests/delete-hm9000.rb "$(pwd)" bosh-lite/deployments/cf.yml
   ../buildpacks-ci/tasks/generate-cf-and-diego-manifests/swap-cf-release-scim-admin-password.rb "$(pwd)" bosh-lite/deployments/cf.yml
   ../buildpacks-ci/tasks/generate-cf-and-diego-manifests/swap-jwt-keys.rb "$(pwd)" bosh-lite/deployments/cf.yml
 
