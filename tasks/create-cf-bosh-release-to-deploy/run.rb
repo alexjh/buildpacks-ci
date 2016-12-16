@@ -17,7 +17,25 @@ release_names.each do |language|
   FileUtils.mv src, dst
 end
 
+replacement_function = <<-FUNCTION
+running_in_container() {
+  true
+}
+FUNCTION
+
 Dir.chdir 'cf-release' do
+  files_to_edit = Dir["**/*.sh"].select do |file|
+    File.read(file).include? 'running_in_container()'
+  end
+
+  files_to_edit.each do |file|
+    contents=File.read(file)
+
+    contents.gsub!(/running_in_container\(\)\s+{.*}/m, replacement_function )
+    File.write(file, contents)
+    puts "Replaced running_in_container() in #{file}"
+  end
+
   system(%(bundle && bosh --parallel 10 sync blobs && bosh create release --force --with-tarball --name cf --version 212.0.#{Time.now.to_i})) || raise('cannot create cf-release')
 end
 
