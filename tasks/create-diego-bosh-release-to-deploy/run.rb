@@ -26,7 +26,7 @@ Dir.chdir 'diego-release' do
     puts "Replaced running_in_container() in #{file}"
   end
 
-  system(%(bundle && bosh --parallel 10 sync blobs && bosh create release --force --with-tarball --name diego)) || raise('cannot create diego-release')
+  system(%(bosh --parallel 10 sync blobs && bosh create release --force --with-tarball --name diego)) || raise('cannot create diego-release')
 end
 
 system('rsync -a diego-release/ diego-release-artifacts') || raise('cannot rsync directories')
