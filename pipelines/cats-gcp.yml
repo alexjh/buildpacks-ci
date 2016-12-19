@@ -35,7 +35,7 @@ resources:
     source:
       uri: {{deployments-git-uri}}
       private_key: {{deployments-private-key}}
-      branch: master
+      branch: cats-gcp
   - name: cf-release-cf-deployment
     type: bosh-deployment
     source:
