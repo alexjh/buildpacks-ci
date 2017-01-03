@@ -3,8 +3,6 @@
 
 buildpacks_ci_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..'))
 
-require "#{buildpacks_ci_dir}/lib/buildpack-cve-tags"
-require "#{buildpacks_ci_dir}/lib/buildpack-cve-notifier"
 require "#{buildpacks_ci_dir}/lib/stack-cve-notifier"
 require "#{buildpacks_ci_dir}/lib/notifiers/system-cve-tracker-notifier"
 require "#{buildpacks_ci_dir}/lib/notifiers/buildpack-system-cve-slack-notifier"
