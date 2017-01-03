@@ -24,11 +24,6 @@ resources:
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
-  - name: buildpacks-ci-branch
-    type: git
-    source:
-      uri: {{buildpacks-ci-git-uri-public}}
       branch: buildpack-cves #{{buildpacks-ci-git-uri-public-branch}}
   - name: new-releases
     type: git
@@ -65,7 +60,7 @@ resources:
         username: {{cve-amazon-ses-smtp-username}}
         password: {{cve-amazon-ses-smtp-password}}
       from: cf-buildpacks-eng@pivotal.io
-      to: [ 'kgross@pivotal.io', 'athornton@pivotal.io' ] #["cf-security@pivotal.io", "cf-buildpacks-eng@pivotal.io"]
+      to:  ["athornton@pivotal.io"] #["cf-security@pivotal.io", "cf-buildpacks-eng@pivotal.io"]
 
 jobs:
   - name: New Releases
@@ -129,16 +124,17 @@ jobs:
     public: true
     plan:
       - aggregate:
-        - get: buildpacks-ci-branch
+        - get: buildpacks-ci
         - get: new-cves
         - get: new-buildpack-cves
       - task: check-for-new-buildpack-cves
-        file: buildpacks-ci-branch/tasks/check-for-new-buildpack-cves/task.yml
+        file: buildpacks-ci/tasks/check-for-new-buildpack-cves/task.yml
         params:
           GITHUB_USERNAME: {{github-username}}
           GITHUB_PASSWORD: {{github-password}}
           SLACK_CHANNEL: {{dependency-notifier-slack-channel}}
           SLACK_WEBHOOK: {{dependency-notifier-slack-webhook}}
+          SLACK_CHANNEL_TEST: {{dependency-notifier-slack-channel-test}}
           EMAIL_PREPARER_DIR: ../cves-email
       - put: new-buildpack-cves
         params:
@@ -166,6 +162,7 @@ jobs:
         params:
           SLACK_CHANNEL: {{dependency-notifier-slack-channel}}
           SLACK_WEBHOOK: {{dependency-notifier-slack-webhook}}
+          SLACK_CHANNEL_TEST: {{dependency-notifier-slack-channel-test}}
           GITHUB_USERNAME: {{github-username}}
           GITHUB_PASSWORD: {{github-password}}
           TRACKER_PROJECT_ID: {{cf-buildpacks-public-tracker-id}}

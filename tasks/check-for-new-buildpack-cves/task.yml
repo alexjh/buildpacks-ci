@@ -6,7 +6,7 @@ image_resource:
     repository: cfbuildpacks/ci
 inputs:
   - name: new-buildpack-cves
-  - name: buildpacks-ci-branch
+  - name: buildpacks-ci
 outputs:
   - name: cves-email
   - name: output-new-buildpack-cves
@@ -17,7 +17,7 @@ run:
     - |
       set -e
       rsync -a new-buildpack-cves/ output-new-buildpack-cves
-      cd buildpacks-ci-branch && bundle exec ./tasks/check-for-new-buildpack-cves/run.rb
+      cd buildpacks-ci && bundle exec ./tasks/check-for-new-buildpack-cves/run.rb
 
 params:
   SLACK_CHANNEL:
@@ -25,3 +25,4 @@ params:
   GITHUB_USERNAME:
   GITHUB_PASSWORD:
   EMAIL_PREPARER_DIR:
+  SLACK_CHANNEL_TEST:
