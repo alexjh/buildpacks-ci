@@ -5,13 +5,13 @@ buildpacks_ci_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..
 
 require "#{buildpacks_ci_dir}/lib/stack-cve-notifier"
 require "#{buildpacks_ci_dir}/lib/notifiers/system-cve-tracker-notifier"
-require "#{buildpacks_ci_dir}/lib/notifiers/buildpack-system-cve-slack-notifier"
-require "#{buildpacks_ci_dir}/lib/notifiers/buildpack-system-cve-email-preparer-and-github-issue-notifier"
+require "#{buildpacks_ci_dir}/lib/notifiers/cve-slack-notifier"
+require "#{buildpacks_ci_dir}/lib/notifiers/cve-email-preparer-and-github-issue-notifier"
 
 stacks_dir = File.expand_path(File.join(buildpacks_ci_dir, '..', 'stacks'))
 
 if ENV['STACK'] == 'stacks'
-  notifiers = [BuildpackSystemCVEEmailPreparerAndGithubIssueNotifier, BuildpackSystemCVESlackNotifier] #SystemCVETrackerNotifier
+  notifiers = [CVEEmailPreparerAndGithubIssueNotifier, CVESlackNotifier] #SystemCVETrackerNotifier
   cves_dir = File.expand_path(File.join(buildpacks_ci_dir, '..', 'output-new-cves', 'new-cve-notifications'))
 elsif ENV['STACK'] == 'stacks-nc'
   notifiers = []

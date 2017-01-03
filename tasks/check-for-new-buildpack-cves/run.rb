@@ -4,9 +4,9 @@
 buildpacks_ci_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..'))
 
 require "#{buildpacks_ci_dir}/lib/buildpack-cve-tags"
-require "#{buildpacks_ci_dir}/lib/buildpack-cve-history"
-require "#{buildpacks_ci_dir}/lib/notifiers/buildpack-system-cve-slack-notifier"
-require "#{buildpacks_ci_dir}/lib/notifiers/buildpack-system-cve-email-preparer-and-github-issue-notifier"
+require "#{buildpacks_ci_dir}/lib/cve-history"
+require "#{buildpacks_ci_dir}/lib/notifiers/cve-slack-notifier"
+require "#{buildpacks_ci_dir}/lib/notifiers/cve-email-preparer-and-github-issue-notifier"
 
 def notify!(language, new_cves, notifiers)
   notifiers.each { |n| n.notify! new_cves, { :category => "buildpack-#{language}", :label => language } }
@@ -16,11 +16,11 @@ buildpack_cves_dir = File.expand_path(File.join(buildpacks_ci_dir, '..', 'output
 
 languages = ['ruby']
 languages.each do |language|
-  past_cves = BuildpackCVEHistory.read_yaml_cves(buildpack_cves_dir, "#{language}.yml")
+  past_cves = CVEHistory.read_yaml_cves(buildpack_cves_dir, "#{language}.yml")
   rss_cves = BuildpackCVETags.run(language)
   new_cves = rss_cves - past_cves
 
-  BuildpackCVEHistory.write_yaml_cves(rss_cves, buildpack_cves_dir, "#{language}.yml") unless new_cves.empty?
+  CVEHistory.write_yaml_cves(rss_cves, buildpack_cves_dir, "#{language}.yml") unless new_cves.empty?
 
-  notify!(language, new_cves, [BuildpackSystemCVEEmailPreparerAndGithubIssueNotifier, BuildpackSystemCVESlackNotifier])
+  notify!(language, new_cves, [CVEEmailPreparerAndGithubIssueNotifier, CVESlackNotifier])
 end
