@@ -135,6 +135,7 @@ jobs:
           SLACK_CHANNEL: {{dependency-notifier-slack-channel}}
           SLACK_WEBHOOK: {{dependency-notifier-slack-webhook}}
           SLACK_CHANNEL_TEST: {{dependency-notifier-slack-channel-test}}
+          SLACK_WEBHOOK_TEST: {{dependency-notifier-slack-webhook-test}}
           EMAIL_PREPARER_DIR: ../cves-email
       - put: new-buildpack-cves
         params:
@@ -163,6 +164,7 @@ jobs:
           SLACK_CHANNEL: {{dependency-notifier-slack-channel}}
           SLACK_WEBHOOK: {{dependency-notifier-slack-webhook}}
           SLACK_CHANNEL_TEST: {{dependency-notifier-slack-channel-test}}
+          SLACK_WEBHOOK_TEST: {{dependency-notifier-slack-webhook-test}}
           GITHUB_USERNAME: {{github-username}}
           GITHUB_PASSWORD: {{github-password}}
           TRACKER_PROJECT_ID: {{cf-buildpacks-public-tracker-id}}
