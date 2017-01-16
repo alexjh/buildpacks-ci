@@ -620,6 +620,8 @@ jobs: ##########################################################################
         - get: new-cves-out
         - task: compare-cve-resources
           file: buildpacks-ci/tasks/compare-cve-resources/task.yml
+          params:
+            FILE_PATH: "new-cve-notifications/ubuntu14.04.yml"
         # - put: new-cves-out
         #   params:
         #     repository: new-cves-artifacts
