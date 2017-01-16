@@ -25,7 +25,7 @@ resources: #####################################################################
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: fix-pipeline-looping #{{buildpacks-ci-git-uri-public-branch}}
 
   - name: stacks
     type: git
@@ -35,6 +35,14 @@ resources: #####################################################################
       private_key: {{stacks-private-key}}
 
   - name: new-cves
+    type: git
+    source:
+      uri: git@github.com:cloudfoundry/public-buildpacks-ci-robots
+      branch: master
+      paths: [ new-cve-notifications/ubuntu14.04.yml ]
+      private_key: {{public-buildpacks-ci-robots-private-key}}
+
+  - name: new-cves-out
     type: git
     source:
       uri: git@github.com:cloudfoundry/public-buildpacks-ci-robots
@@ -175,21 +183,21 @@ resources: #####################################################################
 
   ## Github Release ##
 
-  - name: stack-github-release-drafts
-    type: github-release
-    source:
-      drafts: true
-      user: {{buildpacks-github-org}}
-      repository: stacks
-      access_token: {{buildpacks-github-token}}
+  # - name: stack-github-release-drafts
+  #   type: github-release
+  #   source:
+  #     drafts: true
+  #     user: {{buildpacks-github-org}}
+  #     repository: stacks
+  #     access_token: {{buildpacks-github-token}}
 
-  - name: stack-github-release-final
-    type: github-release
-    source:
-      drafts: false
-      user: {{buildpacks-github-org}}
-      repository: stacks
-      access_token: {{buildpacks-github-token}}
+  # - name: stack-github-release-final
+  #   type: github-release
+  #   source:
+  #     drafts: false
+  #     user: {{buildpacks-github-org}}
+  #     repository: stacks
+  #     access_token: {{buildpacks-github-token}}
 
   - name: cflinuxfs2-rootfs-github-release
     type: github-release
@@ -586,8 +594,8 @@ jobs: ##########################################################################
     plan:
       - aggregate:
         - get: buildpacks-ci
-        - get: previous-stacks-release
-          resource: stack-github-release-final
+        # - get: previous-stacks-release
+        #   resource: stack-github-release-final
         - get: stacks
           passed: [ shipit ]
         - get: new-cves
@@ -598,28 +606,31 @@ jobs: ##########################################################################
           trigger: true
           passed: [ shipit ]
       - do:
-        - task: generate-release-notes
-          file: buildpacks-ci/tasks/generate-stacks-release-notes/task.yml
-          params:
-            STACK: stacks
-        - put: stack-github-release-drafts
-          params:
-            name: version/number
-            tag: version/number
-            body: release-body/body
-            globs:
-              - stack-s3/cflinuxfs2-*.tar.gz
-        - put: new-cves
-          params:
-            repository: new-cves-artifacts
-            rebase: true
-        on_failure:
-          put: failure-alert
-          params:
-            text: "$BUILD_PIPELINE_NAME $BUILD_JOB_NAME job on Concourse failed! \n Check: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
-            channel: {{concourse-job-failure-notifications-slack-channel}}
-            username: concourse
-            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        # - task: generate-release-notes
+        #   file: buildpacks-ci/tasks/generate-stacks-release-notes/task.yml
+        #   params:
+        #     STACK: stacks
+        # - put: stack-github-release-drafts
+        #   params:
+        #     name: version/number
+        #     tag: version/number
+        #     body: release-body/body
+        #     globs:
+        #       - stack-s3/cflinuxfs2-*.tar.gz
+        - get: new-cves-out
+        - task: compare-cve-resources
+          file: buildpacks-ci/tasks/compare-cve-resources/task.yml
+        # - put: new-cves-out
+        #   params:
+        #     repository: new-cves-artifacts
+        #     rebase: true
+        # on_failure:
+        #   put: failure-alert
+        #   params:
+        #     text: "$BUILD_PIPELINE_NAME $BUILD_JOB_NAME job on Concourse failed! \n Check: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
+        #     channel: {{concourse-job-failure-notifications-slack-channel}}
+        #     username: concourse
+        #     icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
 
   - name: upload-to-docker
     serial: true
