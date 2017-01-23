@@ -42,11 +42,18 @@ resources: #####################################################################
       private_key: {{<%= language %>-buildpack-private-key}}
       branch: master
 
+  - name: buildpack-test
+    type: git
+    source:
+      uri: git@github.com:<%= git_repo_organization %>/<%= language %>-buildpack.git
+      private_key: test-buildpack-private-key
+      branch: testing-tag
+
   - name: buildpacks-ci
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: testing-tag #{{buildpacks-ci-git-uri-public-branch}}
 
   - name: brats
     type: git
@@ -194,6 +201,13 @@ jobs: ##########################################################################
           repository: updated-buildpack
           rebase: true
   <% end %>
+  - name: tag-push-test
+    serial: true
+    public: true
+    plan:
+      - get: buildpack-test
+      - task: tag-test
+        file: buildpacks-ci/tasks/tag-test/task.yml
   - name: create-buildpack-release-story
     serial: true
     public: true
