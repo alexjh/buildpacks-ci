@@ -187,19 +187,20 @@ resources: #####################################################################
 
 jobs: ################################################################################################################
   <% if language == 'nodejs' %>
-   - name: tag-push-test
-     serial: true
-     public: true
-     plan:
-       - get: buildpack
-         resource: buildpack-test
-       - task: tag-test
-         file: buildpacks-ci/tasks/tag-test/task.yml
-       - put: buildpack-test
-         params:
-           repository: buildpack
-           tag: test-tag
-           tag_prefix: v
+  - name: tag-push-test
+    serial: true
+    public: false
+    plan:
+      - get: buildpacks-ci
+      - get: buildpack
+        resource: buildpack-test
+      - task: tag-test
+        file: buildpacks-ci/tasks/tag-test/task.yml
+      - put: buildpack-test
+        params:
+          repository: buildpack
+          tag: test-tag
+          tag_prefix: v
   <% end %>
 
 
