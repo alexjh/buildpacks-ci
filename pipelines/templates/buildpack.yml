@@ -35,6 +35,15 @@ resources: #####################################################################
         - PULL_REQUEST_TEMPLATE
         - "**/*.md"
 
+  <% if language == 'nodejs' %>
+  - name: buildpack-test
+    type: git
+    source:
+      uri: git@github.com:<%= git_repo_organization %>/<%= language %>-buildpack.git
+      private_key: {{test-buildpack-private-key}}
+      branch: github-key-test
+   <% end %>
+
   - name: buildpack-master
     type: git
     source:
@@ -46,7 +55,7 @@ resources: #####################################################################
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: test-github-tag
 
   - name: brats
     type: git
@@ -177,6 +186,23 @@ resources: #####################################################################
       url: {{concourse-job-failure-notifications-slack-webhook}}
 
 jobs: ################################################################################################################
+  <% if language == 'nodejs' %>
+   - name: tag-push-test
+     serial: true
+     public: true
+     plan:
+       - get: buildpack
+         resource: buildpack-test
+       - task: tag-test
+         file: buildpacks-ci/tasks/tag-test/task.yml
+       - put: buildpack-test
+         params:
+           repository: buildpack
+           tag: test-tag
+           tag_prefix: v
+  <% end %>
+
+
   <% if language == "php" %>
   - name: ensure-manifest-has-modules
     serial: true
