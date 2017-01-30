@@ -198,8 +198,8 @@ jobs: ##########################################################################
         file: buildpacks-ci/tasks/tag-test/task.yml
       - put: buildpack-test
         params:
-          repository: buildpack
-          tag: test.txt
+          repository: buildpack-output
+          tag: buildpack-output/test.txt
           tag_prefix: v
   <% end %>
 
