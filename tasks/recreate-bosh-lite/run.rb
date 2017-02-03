@@ -17,7 +17,7 @@ if iaas == 'azure' || iaas == 'gcp'
   bosh_director_user = ENV.fetch("#{iaas.upcase}_BOSH_DIRECTOR_USER")
   bosh_director_password = ENV.fetch("#{iaas.upcase}_BOSH_DIRECTOR_PASSWORD")
   bosh_director_target = "10.0.0.6"
-  deployments_location = 'buildpacks-ci-artifacts'
+  deployments_location = 'buildpacks-ci'
 elsif iaas == 'aws'
   bosh_lite_deployment_name = bosh_director_user = bosh_director_password = bosh_director_target = nil
   deployments_location = 'deployments-buildpacks-artifacts'
@@ -26,8 +26,7 @@ else
   exit 1
 end
 
-exit 1 unless system "rsync -a deployments-buildpacks/ #{deployments_location}"
-exit 1 unless system "rsync -a buildpacks-ci/ #{deployments_location}"
+exit 1 unless system "rsync -a deployments-buildpacks/ deployments-buildpacks-artifacts"
 
 Dir.chdir (deployments_location) do
   rubygem_mirror = ENV.fetch('RUBYGEM_MIRROR')
