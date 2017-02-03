@@ -26,14 +26,7 @@ else
   exit 1
 end
 
-exit 1 unless system "rsync -avi --progress deployments-buildpacks/ deployments-buildpacks-artifacts"
-
-Dir.chdir (deployments_location) do
-  rubygem_mirror = ENV.fetch('RUBYGEM_MIRROR')
-  exit 1 unless system "bundle config mirror.https://rubygems.org #{rubygem_mirror}"
-  num_cores = `nproc`.strip
-  exit 1 unless system "bundle install --jobs=#{num_cores} --retry 5"
-end
+exit 1 unless system "rsync -a deployments-buildpacks/ deployments-buildpacks-artifacts"
 
 deployment_dir = File.join(Dir.pwd, deployments_location, 'deployments', deployment_id)
 
