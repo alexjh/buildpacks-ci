@@ -26,7 +26,7 @@ else
   exit 1
 end
 
-exit 1 unless system "rsync -a deployments-buildpacks/ deployments-buildpacks-artifacts"
+exit 1 unless system "rsync -avi --progress deployments-buildpacks/ deployments-buildpacks-artifacts"
 
 Dir.chdir (deployments_location) do
   rubygem_mirror = ENV.fetch('RUBYGEM_MIRROR')
