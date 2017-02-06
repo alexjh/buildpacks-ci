@@ -16,6 +16,6 @@ cp -R libbuildpack $CF_DIR
 
 cd $CF_DIR/libbuildpack
 
-go get ./...
-go get -t github.com/onsi/ginkgo/ginkgo
+go get -t ./...
+go get github.com/onsi/ginkgo/ginkgo
 ginkgo -r
