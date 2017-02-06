@@ -5,6 +5,7 @@ set -o nounset
 set -o pipefail
 
 export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$PATH
 mkdir -p $GOPATH
 
 CF_DIR=$GOPATH/src/github.com/cloudfoundry/
@@ -16,4 +17,5 @@ cp -R libbuildpack $CF_DIR
 cd $CF_DIR/libbuildpack
 
 go get ./...
+go get github.com/onsi/ginkgo/ginkgo
 ginkgo -r
