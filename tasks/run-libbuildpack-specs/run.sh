@@ -15,4 +15,5 @@ cp -R libbuildpack $CF_DIR
 
 cd $CF_DIR/libbuildpack
 
+go get ./...
 ginkgo -r
