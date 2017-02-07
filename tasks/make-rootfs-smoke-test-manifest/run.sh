@@ -9,9 +9,11 @@ pushd buildpacks-ci
   source ./bin/target_bosh "$DEPLOYMENT_NAME"
 popd
 
+MANIFEST_DIR="rootfs-smoke-test-manifest-artifacts/$DEPLOYMENT_NAME"
+mkdir -p "$MANIFEST_DIR"
+
 pushd cflinuxfs2-rootfs-release
   ./scripts/generate-bosh-lite-manifest
-  cp manifests/bosh-lite/rootfs-smoke-test.yml "../buildpacks-ci/deployments/$DEPLOYMENT_NAME/"
 popd
 
-rsync -a buildpacks-ci/deployments/ rootfs-smoke-test-manifest-artifacts
+cp cflinuxfs2-rootfs-release/manifests/bosh-lite/rootfs-smoke-test.yml "$MANIFEST_DIR/"

@@ -59,9 +59,8 @@ pushd diego-release
   ruby -i -pe "gsub('network_mtu: null', 'network_mtu: 1432')" bosh-lite/deployments/diego.yml
 popd
 
-pushd buildpacks-ci
-  cp ../cf-release/bosh-lite/deployments/cf.yml "deployments/$DEPLOYMENT_NAME/manifest.yml"
-  cp ../diego-release/bosh-lite/deployments/diego.yml "deployments/$DEPLOYMENT_NAME/diego.yml"
-popd
+MANIFEST_DIR="generate-manifest-artifacts/$DEPLOYMENT_NAME"
+mkdir -p "$MANIFEST_DIR"
 
-rsync -a buildpacks-ci/deployments/ generate-manifest-artifacts
+cp cf-release/bosh-lite/deployments/cf.yml "$MANIFEST_DIR/manifest.yml"
+cp diego-release/bosh-lite/deployments/diego.yml "$MANIFEST_DIR/diego.yml"
