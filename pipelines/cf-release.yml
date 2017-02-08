@@ -11,7 +11,7 @@ resources:
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: run-cats-errand
   - name: cats-concourse-task
     type: git
     source:
@@ -282,7 +282,7 @@ jobs:
           passed: [ deploy-cf-and-diego-to-cf-release ]
       - do:
         - task: cats
-          file: buildpacks-ci/tasks/run-cats-errand/run.sh
+          file: buildpacks-ci/tasks/run-cats-errand/task.yml
           params:
             DEPLOYMENT_NAME: cf-release.buildpacks.ci
             DIEGO_DOCKER_ON: true
