@@ -9,7 +9,7 @@ bosh_target=$DEPLOYMENT_NAME.$DOMAIN_NAME
 bosh target $bosh_target
 bosh login $BOSH_USER $BOSH_PASSWORD
 
-manifest_dir=$(mktemp -d -t manifest)
+manifest_dir=$(mktemp -d -t manifestXXX)
 
 pushd $manifest_dir
 	bosh download manifest cf-warden cf.yml
