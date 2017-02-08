@@ -8,11 +8,11 @@ inputs:
   - name: buildpacks-ci
 run:
   path: buildpacks-ci/tasks/run-cats-errand/run.sh
-  params:
-    DEPLOYMENT_NAME:
-    DOMAIN_NAME:
-    DIEGO_DOCKER_ON:
-    CI_CF_USERNAME:
-    CI_CF_PASSWORD:
-    BOSH_USER:
-    BOSH_PASSWORD:
+params:
+  DEPLOYMENT_NAME:
+  DOMAIN_NAME:
+  DIEGO_DOCKER_ON:
+  CI_CF_USERNAME:
+  CI_CF_PASSWORD:
+  BOSH_USER:
+  BOSH_PASSWORD:
