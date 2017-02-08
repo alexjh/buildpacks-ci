@@ -281,20 +281,15 @@ jobs:
         - get: dotnet-core-buildpack-github-release
           passed: [ deploy-cf-and-diego-to-cf-release ]
       - do:
-        - task: copy-cf-acceptance-tests
-          file: buildpacks-ci/tasks/copy-cf-acceptance-tests/task.yml
-        - task: write-cats-config
-          file: buildpacks-ci/tasks/write-cats-config/task.yml
+        - task: cats
+          file: buildpacks-ci/tasks/run-cats-errand/run.sh
           params:
+            DEPLOYMENT_NAME: cf-release.buildpacks.ci
+            DIEGO_DOCKER_ON: true
+            BOSH_USER: {{bosh_user}}
+            BOSH_PASSWORD: {{gcp_bosh_lite_admin_password}}
             CI_CF_USERNAME: {{ci-cf-username}}
             CI_CF_PASSWORD: {{ci-cf-password}}
-            APPS_DOMAIN: cf-release.buildpacks.ci.cf-app.com
-            DIEGO_DOCKER_ON: true
-        - task: cats
-          file: cats-concourse-task/task.yml
-          params:
-            NODES: 4
-            CONFIG_FILE_PATH: integration_config.json
         on_failure:
           put: failure-alert
           params:
