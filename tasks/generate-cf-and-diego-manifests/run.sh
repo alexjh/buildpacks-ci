@@ -38,6 +38,8 @@ properties:
     backend: diego
   cc:
     default_to_diego_backend: true
+  router:
+    max_idle_connections: 0
 
 jobs:
 - name: api_z1
