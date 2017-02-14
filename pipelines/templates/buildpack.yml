@@ -457,15 +457,14 @@ jobs: ##########################################################################
             CF_PASSWORD: {{ci_cf_shared_password}}
             RUBYGEM_MIRROR: {{rubygem-mirror}}
           privileged: true
-#       - task: brats
-#         file: buildpacks-ci/tasks/run-brats/task.yml
-#         params:
-#           BUILDPACK_BRANCH: develop
-#           CI_CF_USERNAME: {{ci-cf-username}}
-#           CI_CF_PASSWORD: {{ci-cf-password}}
-#           LANGUAGE: <%= language %>
-#           RUBYGEM_MIRROR: {{rubygem-mirror}}
-#           BOSH_LITE_DOMAIN_NAME: {{bosh-lite-domain-name}}
+        - task: brats
+          file: buildpacks-ci/tasks/run-shared-brats/task.yml
+          params:
+            BUILDPACK_BRANCH: develop
+            CI_CF_USERNAME: {{ci-cf-username}}
+            CI_CF_PASSWORD: {{ci_cf_shared_password}}
+            LANGUAGE: <%= language %>
+            RUBYGEM_MIRROR: {{rubygem-mirror}}
         on_failure:
           put: failure-alert
           params:
