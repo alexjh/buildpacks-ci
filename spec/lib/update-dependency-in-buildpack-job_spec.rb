@@ -168,20 +168,43 @@ describe UpdateDependencyInBuildpackJob do
     let(:dependency)       { 'node' }
     let(:story_ids)        { [123456] }
     let(:buildpack_dir)    { Dir.mktmpdir }
-    let(:version)          { '4.4.7' }
+    let(:manifest_yml)     { TempFile.new('manifest.yml', buildpack_dir) }
     let(:removed_versions) { %w(4.4.5) }
+    let(:manifest_content) { <<~MANIFEST
+---
+dependencies:
+  - name: node
+    version: 4.4.5
+MANIFEST
+          }
 
     before do
       allow(TrackerClient).to receive(:new).and_return(tracker_client)
       allow(tracker_client).to receive(:find_unaccepted_story_ids).with("include new node 4.4.7").and_return([123456])
+      File.write(manifest_yml, manifest_content)
     end
 
     after { FileUtils.rm_rf(buildpack_dir) }
 
-    it 'updates the buildpack and makes a git commit with the matching unaccepted story ids' do
-      expect(subject).to receive(:update_buildpack).and_return([buildpack_dir, dependency, version, removed_versions])
-      expect(subject).to receive(:write_git_commit).with(buildpack_dir, 'node', [123456], '4.4.7', ['4.4.5'])
-      subject.run!
+    context 'the new version of the dependency is lower than the version currently in the manifest' do
+      let(:version)          { '4.4.4' }
+
+      it 'does not update the buildpack or make a git commit' do
+        expect(subject).not_to receive(:update_buildpack).and_return([buildpack_dir, dependency, version, removed_versions])
+        expect(subject).not_to receive(:write_git_commit)
+        subject.run!
+      end
+
+    end
+
+    context 'the new version of the dependency is greater than or equal to the version currently in the manifest' do
+      let(:version)          { '4.4.7' }
+
+      it 'updates the buildpack and makes a git commit with the matching unaccepted story ids' do
+        expect(subject).to receive(:update_buildpack).and_return([buildpack_dir, dependency, version, removed_versions])
+        expect(subject).to receive(:write_git_commit).with(buildpack_dir, 'node', [123456], '4.4.7', ['4.4.5'])
+        subject.run!
+      end
     end
   end
 end
