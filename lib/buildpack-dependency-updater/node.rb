@@ -57,7 +57,7 @@ class BuildpackDependencyUpdater::Node < BuildpackDependencyUpdater
     buildpack_manifest["url_to_dependency_map"] << dependency_hash
   end
 
-  def dependency_version_currently_in_manifest
+  def dependency_version_currently_in_manifest?
     dependencies = buildpack_manifest['dependencies']
     dependencies.select do |dep|
       dep['name'] == dependency &&
