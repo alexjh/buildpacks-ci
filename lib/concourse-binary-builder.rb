@@ -114,7 +114,7 @@ class ConcourseBinaryBuilder
     ext = case dependency
             when 'composer' then
               '*.phar'
-            when 'go', 'dotnet', 'yarn' then
+            when 'go', 'dotnet', 'yarn', 'hwc' then
               '*.tar.gz'
             else
               '-*.tgz'

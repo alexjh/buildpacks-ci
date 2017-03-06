@@ -35,7 +35,7 @@ resources: #####################################################################
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: hwc-build #{{buildpacks-ci-git-uri-public-branch}}
 
   - name: builds-out
     type: git
@@ -45,7 +45,7 @@ resources: #####################################################################
       paths: [ binary-builds/* ]
       private_key: {{public-buildpacks-ci-robots-private-key}}
 
-<% dep_build_names = %w(bower go bundler composer dotnet glide godep httpd jruby php php7 python node nginx ruby yarn) %>
+<% dep_build_names = %w(bower go bundler composer dotnet glide godep httpd hwc jruby php php7 python node nginx ruby yarn) %>
 <% dep_build_names.each do |dep| %>
   - name: <%= dep %>-builds
     type: git
@@ -152,7 +152,7 @@ groups: ########################################################################
   - name: manual-builds
     jobs:
     - binary-builder-specs
-<% %w(go php php7 ruby jruby bundler python httpd).each do |dependency| %>
+<% %w(go php php7 ruby jruby bundler python httpd hwc).each do |dependency| %>
     - build-<%= dependency %>
 <% end %>
 
@@ -204,7 +204,7 @@ jobs: ##########################################################################
             username: concourse
             icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
 
-<% %w(go php php7 ruby jruby bundler python httpd).each do |dependency| %>
+<% %w(go php php7 ruby jruby bundler python httpd hwc).each do |dependency| %>
   - name: build-<%= dependency %>
     serial: true
     public: true
