@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+set -eu +x -o pipefail
+
+payload=$TMPDIR/cf-tracker-resource-request
+cat > "$payload" <&0
+
+PROJECT_ID=$(jq -r '.source.project_id' < "$payload")
+TOKEN=$(jq -r '.source.token' < "$payload")
+LABEL=$(jq -r '.source.label' < "$payload")
+
+curl -X GET -H "X-TrackerToken: ${TOKEN}" "https://www.pivotaltracker.com/services/v5/projects/${PROJECT_ID}/search?query=label%3A${LABEL}" | jq -r ".stories.stories|sort_by(.labels[]|select(.name==\"${LABEL}\").created_at)|reverse|map({ ref: .id|tostring })" >&3
+
