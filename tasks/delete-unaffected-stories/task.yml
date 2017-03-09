@@ -8,5 +8,5 @@ inputs:
   - name: buildpacks-ci
   - name: tracker-filter-resource
 run:
-  path: ruby
+  path: /usr/local/bin/ruby
   args: [ -r ./buildpacks-ci/tasks/delete-unaffected-stories/delete-unaffected-stories.rb -e 'DeleteUnaffectedStories.main' ]
