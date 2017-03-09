@@ -10,5 +10,3 @@ deployments/concourse-gcp/cloud.yml
 deployments/concourse-gcp-terraform/concourse.tf
 deployments/concourse-gcp-terraform/terraform.tfstate
 deployments/concourse-gcp-terraform/terraform.tfstate.backup
-
-/dockerfiles/cf-tracker-resource/jq-linux64

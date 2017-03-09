@@ -84,6 +84,9 @@ jobs:
       - get: stacks
       - task: delete-unaffected-stories
         file: buildpacks-ci/tasks/delete-unaffected-stories/task.yml
+      - put: tracker-filter-resource
+        params:
+          file: output/stories.json
 
   - name: new-releases
     serial: true
