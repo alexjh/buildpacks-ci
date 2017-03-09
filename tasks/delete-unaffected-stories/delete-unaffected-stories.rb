@@ -1,5 +1,5 @@
 class DeleteUnaffectedStories
   def self.main
-    echo "Hi"
+    puts "Hi"
   end
 end
