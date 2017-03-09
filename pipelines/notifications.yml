@@ -81,6 +81,7 @@ jobs:
       - get: tracker-filter-resource
         trigger: true
       - get: buildpacks-ci
+      - get: stacks
       - task: delete-unaffected-stories
         file: buildpacks-ci/tasks/delete-unaffected-stories/task.yml
 

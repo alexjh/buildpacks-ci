@@ -21,7 +21,7 @@ class DeleteUnaffectedStories
           @receipt.include? package
         end
         output[story['ref']] = affected ? 'affected' : 'delete'
-      rescue => e
+      rescue
         puts 'IGNORED: ', story.to_hash
         any_failed = true
       end
