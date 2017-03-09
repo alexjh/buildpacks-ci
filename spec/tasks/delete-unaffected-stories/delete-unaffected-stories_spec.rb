@@ -11,7 +11,7 @@ describe DeleteUnaffectedStories do
   let(:stack_receipt) { Tempfile.new }
   let(:output_file) { Tempfile.new }
   subject { DeleteUnaffectedStories.new(stories_file.path, stack_receipt.path, output_file.path) }
-  # before { allow_any_instance_of(DeleteUnaffectedStories).to receive(:puts) }
+  before { allow_any_instance_of(DeleteUnaffectedStories).to receive(:puts) }
 
   it "loops over stories and finds USN info" do
     stub_request(:get, "http://usn-data/1").to_return(status: 200, body: "<html><body><dt>Ubuntu 14.04 LTS:</dt><dd><a>bison</a></dd></body></html>")
@@ -85,9 +85,9 @@ describe DeleteUnaffectedStories do
 
   context "story is malformed" do
     it "loops over stories and finds USN info" do
-      stub_request(:get, "http://usn-data/21")
+      stub_request(:get, "http://usn-data/21").to_return(status: 200, body: "")
 
-      stories_file.write(JSON.dump({version: { ref: JSON.dump([{description: "**USN**: http://usn-data/1"}, {description: "**USN:** http://usn-data/21"}]) }}))
+      stories_file.write(JSON.dump({version: { ref: JSON.dump([{description: "**USN** http://usn-data/1"}, {description: "**USN:** http://usn-data/21"}]) }}))
       stories_file.close
 
       expect { subject.run }.to raise_error("Some stories failed")
