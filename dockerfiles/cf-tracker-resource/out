@@ -11,9 +11,9 @@ PROJECT_ID=$(jq -r '.source.project_id' < "$payload")
 TOKEN=$(jq -r '.source.token' < "$payload")
 FILE=$(jq -r '.params.file' < "$payload")
 
-cat $SOURCEDIR/$FILE
+cat "$SOURCEDIR/$FILE"
 
-STORIES=$(jq -r 'to_entries[]|select(.value=="delete")|.key' < $SOURCEDIR/$FILE)
+STORIES=$(jq -r 'to_entries[]|select(.value=="delete")|.key' < "$SOURCEDIR/$FILE")
 echo "STORIES: $STORIES"
 for id in $STORIES; do
   echo "DELETE: $id"
@@ -22,4 +22,5 @@ done
 
 echo "DONE"
 
-echo "{ \"version\": { \"ref\": \"payload\" } }" >&3
+# echo "{ \"version\": { \"ref\": \"payload\" } }" >&3
+jq -r '{version:{ref: .version.ref}}' < "$payload" >&3

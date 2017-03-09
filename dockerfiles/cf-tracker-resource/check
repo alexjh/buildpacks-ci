@@ -7,7 +7,6 @@ payload=$TMPDIR/cf-tracker-resource-request
 cat > "$payload" <&0
 
 PROJECT_ID=$(jq -r '.source.project_id' < "$payload")
-TOKEN=$(jq -r '.source.token' < "$payload")
 LABEL=$(jq -r '.source.label' < "$payload")
 PREVIOUS_LIST=$(jq -r '.version.ref' < "$payload") # list of story ids passed forward last time
 
@@ -16,24 +15,24 @@ STORY_LIST=$(wget --quiet --no-verbose -O - "https://www.pivotaltracker.com/serv
 
 if [ "$PREVIOUS_LIST" == "null" ]; then
   echo "previous list is null"
-  echo $STORY_LIST | jq -R '.' | jq -s "map({ ref: . })" >&3
+  echo "$STORY_LIST" | jq -R '.' | jq -s "map({ ref: . })" >&3
   exit 0
 fi
 
 LATEST_STORY_ID=$(echo "$STORY_LIST" | jq -r .[0].ref)
 echo 'latest story id:'
-echo $LATEST_STORY_ID
+echo "$LATEST_STORY_ID"
 
-for id in $(echo $PREVIOUS_LIST | jq -r . | jq -r .[].ref); do
+for id in $(echo "$PREVIOUS_LIST" | jq -r . | jq -r .[].ref); do
   echo 'ID'
-  echo $id
-  if [ $id == "$LATEST_STORY_ID" ]; then
+  echo "$id"
+  if [ "$id" == "$LATEST_STORY_ID" ]; then
     echo 'returning previous list, because most recent story is not new'
-    echo $PREVIOUS_LIST | jq -R '.' | jq -s "map({ ref: . })" >&3
+    echo "$PREVIOUS_LIST" | jq -R '.' | jq -s "map({ ref: . })" >&3
     exit 0
   fi
 done
 
 echo 'returning new list, because most recent story is not in previous list'
-echo $STORY_LIST | jq -R '.' | jq -s "map({ ref: . })" >&3
+echo "$STORY_LIST" | jq -R '.' | jq -s "map({ ref: . })" >&3
 
