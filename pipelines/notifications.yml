@@ -4,6 +4,7 @@ resource_types:
     type: docker-image
     source:
       repository: cfbuildpacks/cf-tracker-resource
+      tag: latest
   - name: email-sender
     type: docker-image
     source:
@@ -14,12 +15,12 @@ resource_types:
       repository: cftoolsmiths/cron-test
 
 resources:
-  - name: tracker-label-fred
+  - name: tracker-filter-resource
     type: cf-tracker-resource
     source:
       project_id: {{cf-buildpacks-public-tracker-id}}
       token: {{pivotal-tracker-api-token}}
-      label: fred
+      label: testlabel
   - name: monday-funday
     type: cron
     source:
@@ -34,7 +35,7 @@ resources:
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: sec-triage # {{buildpacks-ci-git-uri-public-branch}}
   - name: new-releases
     type: git
     source:
@@ -73,28 +74,16 @@ resources:
       to: ["cf-security@pivotal.io", "cf-buildpacks-eng@pivotal.io", "security@pivotal.io"]
 
 jobs:
-  - name: test-labels
+  - name: tracker-filter-test
     serial: true
     public: true
     plan:
-      - get: tracker-label-fred
+      - get: tracker-filter-resource
         trigger: true
-      - task: check-for-new-dependency-releases
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: golang
-              tag: '1.6'
-          inputs:
-          - name: tracker-label-fred
-          run:
-            path: sh
-            args:
-            - -exc
-            - |
-              cat tracker-label-fred/data
+      - get: buildpacks-ci
+      - task: delete-unaffected-stories
+        file: buildpacks-ci/tasks/delete-unaffected-stories/task.yml
+
   - name: new-releases
     serial: true
     public: true

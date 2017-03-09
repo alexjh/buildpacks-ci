@@ -4,7 +4,7 @@ exec 1>&2 # redirect all output to stderr for logging
 set -eu +x -o pipefail
 
 echo "unimplemented"
-exit 1
+exit 0
 
 # payload=$TMPDIR/cf-space-resource-request
 # cat > "$payload" <&0

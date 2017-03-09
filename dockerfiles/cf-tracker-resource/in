@@ -7,4 +7,32 @@ DESTINATION=$1
 payload=$DESTINATION/data
 cat > "$payload" <&0
 
-cat < "$payload" >&3
+PROJECT_ID=$(jq -r '.source.project_id' < "$payload")
+TOKEN=$(jq -r '.source.token' < "$payload")
+LABEL=$(jq -r '.source.label' < "$payload")
+STORIES=$(jq -r '.version' < "$payload")
+
+echo "VERSION CONTENT:"
+echo $STORIES
+
+# STORY_METADATA=$(curl -X GET -H "X-TrackerToken: ${TOKEN}" "https://www.pivotaltracker.com/services/v5/projects/${PROJECT_ID}/stories/${STORIES}" | jq .)
+
+# CLEANED_METADATA= $(echo $STORY_METADATA | tr -d \")
+# echo "$CLEANED_METADATA" >"$DESTINATION/test"
+
+# TRACKER_METADATA=$(jq -n "{ version: {ref: $(echo $STORIES | jq -R .)}, metadata: [ \"$CLEANED_METADATA\" ] }")
+
+# echo "$TRACKER_METADATA" >"$DESTINATION/story"
+# echo "$TRACKER_METADATA">&3
+
+# [
+  # {
+    # "ref": "[ { \"ref\": \"141257589\", \"description\": \"dont delete, test for #140945217\" }, { \"ref\": \"141257573\", \"description\": \"dont delete, test for #140945217\" } ]"
+  # }
+# ]
+
+# echo "{ \"version\": { \"ref\": \"61cebf\" }, \"metadata\": [ { \"name\": \"commit\", \"value\": \"61cebf\" }, { \"name\": \"author\", \"value\": \"Hulk Hogan\" } ] }" >&3
+
+# echo $payload >&3
+
+echo "{ \"version\": { \"ref\": \"payload\" } }" >&3
