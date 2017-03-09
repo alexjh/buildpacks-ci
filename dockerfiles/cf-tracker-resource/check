@@ -12,7 +12,7 @@ LABEL=$(jq -r '.source.label' < "$payload")
 PREVIOUS_LIST=$(jq -r '.version.ref' < "$payload") # list of story ids passed forward last time
 
 # get list of all story ids in project with Security Triage label
-STORY_LIST=$(curl -X GET -H "X-TrackerToken: ${TOKEN}" "https://www.pivotaltracker.com/services/v5/projects/${PROJECT_ID}/search?query=label%3A${LABEL}%20AND%20state%3Aunscheduled" | jq -r ".stories.stories|sort_by(.created_at)|reverse|map({ ref: .id|tostring, description })")
+STORY_LIST=$(wget --quiet --no-verbose -O - "https://www.pivotaltracker.com/services/v5/projects/${PROJECT_ID}/search?query=label%3A${LABEL}%20AND%20state%3Aunscheduled" | jq -r ".stories.stories|sort_by(.created_at)|reverse|map({ ref: .id|tostring, description })")
 
 if [ "$PREVIOUS_LIST" == "null" ]; then
   echo "previous list is null"
