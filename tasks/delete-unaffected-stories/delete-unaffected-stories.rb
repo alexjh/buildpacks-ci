@@ -38,8 +38,8 @@ class DeleteUnaffectedStories
     packages = []
     url = story['description'].match(/^\**USN:\**\s*(\S+)$/)[1]
     doc = Nokogiri::HTML(open(url))
-    node = doc.css('dt:contains("Ubuntu 14.04 LTS")').first.next_sibling
-    while %w(text dd).include?(node && node.name)
+    node = doc.css('dt:contains("Ubuntu 14.04 LTS")').first&.next_sibling
+    while %w(text dd).include? node&.name
       if node.name == 'dd'
         packages << node.css('> a').text
       end
