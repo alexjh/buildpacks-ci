@@ -7,12 +7,7 @@ DESTINATION=$1
 payload=$DESTINATION/data
 cat > "$payload" <&0
 
-PROJECT_ID=$(jq -r '.source.project_id' < "$payload")
-TOKEN=$(jq -r '.source.token' < "$payload")
-LABEL=$(jq -r '.source.label' < "$payload")
-STORIES=$(jq -r '.version' < "$payload")
-
-echo "VERSION CONTENT:"
-echo $STORIES
+## Pretty print version input
+jq '.version' < "$payload"
 
 echo "{ \"version\": { \"ref\": \"payload\" } }" >&3
