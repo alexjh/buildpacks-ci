@@ -15,7 +15,8 @@ STORY_LIST=$(wget --quiet --no-verbose -O - "https://www.pivotaltracker.com/serv
 
 if [ "$PREVIOUS_LIST" == "null" ]; then
   echo "previous list is null"
-  echo "$STORY_LIST" | jq -R '.' | jq -s "map({ ref: . })" >&3
+  # shellcheck disable=SC2086
+  echo $STORY_LIST | jq -R '.' | jq -s "map({ ref: . })" >&3
   exit 0
 fi
 
@@ -34,5 +35,6 @@ for id in $(echo "$PREVIOUS_LIST" | jq -r . | jq -r .[].ref); do
 done
 
 echo 'returning new list, because most recent story is not in previous list'
-echo "$STORY_LIST" | jq -R '.' | jq -s "map({ ref: . })" >&3
+# shellcheck disable=SC2086
+echo $STORY_LIST | jq -R '.' | jq -s "map({ ref: . })" >&3
 
