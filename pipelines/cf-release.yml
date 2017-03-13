@@ -11,7 +11,7 @@ resources:
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: make-cats-pass # {{buildpacks-ci-git-uri-public-branch}}
   - name: cats-concourse-task
     type: git
     source:
@@ -295,7 +295,10 @@ jobs:
             CI_CF_USERNAME: {{ci-cf-username}}
             CI_CF_PASSWORD: {{ci-cf-password}}
             APPS_DOMAIN: cf-release.buildpacks.ci.cf-app.com
-            DIEGO_DOCKER_ON: true
+            # APPS_DOMAIN: buildpacks-shared.cf-app.com
+            # CI_CF_USERNAME: {{ci-cf-username}}
+            # CI_CF_PASSWORD: {{ci_cf_shared_password}}
+            DIEGO_DOCKER_ON: false
         - task: cats
           file: cats-concourse-task/task.yml
           params:

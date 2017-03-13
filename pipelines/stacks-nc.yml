@@ -516,7 +516,7 @@ jobs: ##########################################################################
             CI_CF_USERNAME: {{ci-cf-username}}
             CI_CF_PASSWORD: {{ci-cf-password}}
             APPS_DOMAIN: stacks-nc.buildpacks.ci.cf-app.com
-            DIEGO_DOCKER_ON: true
+            DIEGO_DOCKER_ON: false
         - task: cats
           file: cats-concourse-task/task.yml
           params:
