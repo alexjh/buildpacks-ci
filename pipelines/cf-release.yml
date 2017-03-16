@@ -11,7 +11,7 @@ resources:
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: flakeattempts # {{buildpacks-ci-git-uri-public-branch}}
   - name: cats-concourse-task
     type: git
     source:
@@ -263,7 +263,8 @@ jobs:
     plan:
       - aggregate:
         - get: buildpacks-ci
-        - get: cats-concourse-task
+        - get: cats-concourse-task-inp
+          resource: cats-concourse-task
         - get: cf-release
           resource: cf-release-rc
           params:
@@ -302,6 +303,8 @@ jobs:
             CI_CF_PASSWORD: {{ci-cf-password}}
             APPS_DOMAIN: cf-release.buildpacks.ci.cf-app.com
             DIEGO_DOCKER_ON: true
+        - task: add-flake-attempts-to-cats
+          file: buildpacks-ci/tasks/add-flake-attempts-to-cats/task.yml
         - task: cats
           file: cats-concourse-task/task.yml
           params:
