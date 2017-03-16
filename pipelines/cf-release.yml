@@ -11,7 +11,7 @@ resources:
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: flakeattempts # {{buildpacks-ci-git-uri-public-branch}}
+      branch: {{buildpacks-ci-git-uri-public-branch}}
   - name: cats-concourse-task
     type: git
     source:
