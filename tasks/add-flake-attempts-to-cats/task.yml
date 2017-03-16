@@ -7,6 +7,7 @@ image_resource:
     repository: alpine
 
 inputs:
+- name: buildpacks-ci
 - name: cats-concourse-task-inp
 
 outputs:
