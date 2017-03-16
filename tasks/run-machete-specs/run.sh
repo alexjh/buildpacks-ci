@@ -4,8 +4,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-DEPLOYMENT_NAME=$(cat cf-environments/name)
-
 pushd buildpacks-ci
   ./scripts/start-docker
 popd
