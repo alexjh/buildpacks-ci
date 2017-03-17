@@ -308,8 +308,9 @@ jobs: ##########################################################################
             RUBYGEM_MIRROR: {{rubygem-mirror}}
           privileged: true
           ensure:
-            task: delete-cf-space
-            file: buildpacks-ci/tasks/delete-cf-space/task-bp.yml
+            put: cf-bp-space
+            params:
+              remove: true
         on_failure:
           put: failure-alert
           params:
@@ -497,8 +498,9 @@ jobs: ##########################################################################
                 RUBYGEM_MIRROR: {{rubygem-mirror}}
               privileged: true
             ensure:
-              task: delete-cf-space
-              file: buildpacks-ci/tasks/delete-cf-space/task-bp.yml
+              put: cf-bp-space
+              params:
+                remove: true
           - do:
             - put: cf-brat-space
             - task: brats
@@ -510,8 +512,9 @@ jobs: ##########################################################################
                 LANGUAGE: <%= language %>
                 RUBYGEM_MIRROR: {{rubygem-mirror}}
             ensure:
-              task: delete-cf-space
-              file: buildpacks-ci/tasks/delete-cf-space/task-brat.yml
+              put: cf-brat-space
+              params:
+                remove: true
         on_failure:
           put: failure-alert
           params:

@@ -10,12 +10,26 @@ TARGET=$(jq -r '.source.target' < "$payload")
 USERNAME=$(jq -r '.source.username' < "$payload")
 PASSWORD=$(jq -r '.source.password' < "$payload")
 ORGANIZATION=$(jq -r '.source.organization' < "$payload")
+REMOVE=$(jq -r '.params.remove' < "$payload")
 
 cf api "$TARGET" --skip-ssl-validation || (sleep 4 && cf api "$TARGET" --skip-ssl-validation)
 cf auth "$USERNAME" "$PASSWORD" || (sleep 4 && cf auth "$USERNAME" "$PASSWORD")
 
-SPACE=$(openssl rand -base64 32 | base64 | head -c 8 | awk '{print tolower($0)}')
-cf create-org "$ORGANIZATION"
-cf create-space "$SPACE" -o "$ORGANIZATION" || (sleep 4 && cf create-space "$SPACE" -o "$ORGANIZATION")
 
-echo "{\"version\": {\"ref\":\"$SPACE\"},\"metadata\":[]}" >&3
+if [ "$REMOVE" == "true" ]; then
+	echo "Delete Space"
+	SPACE=$(jq -r '.version.ref' < "$payload")
+
+	cf delete-space "$SPACE" -o "$ORGANIZATION" -f || (sleep 4 && cf delete-space "$SPACE" -o "$ORGANIZATION" -f)
+
+	echo "{\"version\": {\"ref\":\"Removed $SPACE\"},\"metadata\":[]}" >&3
+else
+	echo "Create Space"
+	SPACE=$(openssl rand -base64 32 | base64 | head -c 8 | awk '{print tolower($0)}')
+
+	cf create-org "$ORGANIZATION"
+	cf create-space "$SPACE" -o "$ORGANIZATION" || (sleep 4 && cf create-space "$SPACE" -o "$ORGANIZATION")
+
+	echo "{\"version\": {\"ref\":\"$SPACE\"},\"metadata\":[]}" >&3
+fi
+
