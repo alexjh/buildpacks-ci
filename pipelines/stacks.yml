@@ -574,7 +574,7 @@ jobs: ##########################################################################
       - aggregate:
         - get: buildpacks-ci
         - get: previous-cflinuxfs2-release
-          resource: stack-github-release-final
+          resource: cflinuxfs2-github-release-final
         - get: cflinuxfs2
           passed: [ shipit ]
         - get: new-cves
