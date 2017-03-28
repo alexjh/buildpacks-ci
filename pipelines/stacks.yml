@@ -25,7 +25,7 @@ resources: #####################################################################
     type: git
     source:
       uri: {{buildpacks-ci-git-uri-public}}
-      branch: {{buildpacks-ci-git-uri-public-branch}}
+      branch: rename-stacks #{{buildpacks-ci-git-uri-public-branch}}
 
   - name: cflinuxfs2
     type: git
