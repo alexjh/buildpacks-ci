@@ -54,17 +54,17 @@ resources: #####################################################################
     source:
       uri: https://github.com/cloudfoundry/bosh-lite
 
-  - name: cflinuxfs2-rootfs-release
-    type: git
-    source:
-      uri: git@github.com:cloudfoundry/cflinuxfs2-rootfs-release.git
-      branch: master
-      private_key: {{cflinuxfs2-rootfs-private-key}}
-
   - name: cflinuxfs2-release
     type: git
     source:
-      uri: git@github.com:pivotal-cf-experimental/stacks-release.git
+      uri: git@github.com:cloudfoundry/cflinuxfs2-release.git
+      branch: master
+      private_key: {{cflinuxfs2-rootfs-private-key}}
+
+  - name: cflinuxfs2-release-deprecated
+    type: git
+    source:
+      uri: git@github.com:pivotal-cf-experimental/cflinuxfs2-release-deprecated.git
       branch: master
       private_key: {{stacks-release-private-key}}
 
@@ -203,7 +203,7 @@ resources: #####################################################################
     source:
       drafts: false
       user: {{buildpacks-github-org}}
-      repository: cflinuxfs2-rootfs-release
+      repository: cflinuxfs2-release
       access_token: {{buildpacks-github-token}}
 
   ## Semver Versions ##
@@ -347,7 +347,7 @@ jobs: ##########################################################################
             resource: cf-release-rc
             attempts: 3
           - get: diego-release
-          - get: cflinuxfs2-rootfs-release
+          - get: cflinuxfs2-release
             attempts: 3
           - get: lite-stemcell
             attempts: 3
@@ -396,7 +396,7 @@ jobs: ##########################################################################
           params:
             manifest: rootfs-smoke-test-manifest-artifacts/stacks.buildpacks.ci/rootfs-smoke-test.yml
             stemcells: [lite-stemcell/*.tgz]
-            releases: [cflinuxfs2-rootfs-release-artifacts/dev_releases/cflinuxfs2-rootfs/*.tgz]
+            releases: [cflinuxfs2-release-artifacts/dev_releases/cflinuxfs2-rootfs/*.tgz]
         - task: run-rootfs-smoke-test
           file: buildpacks-ci/tasks/run-rootfs-smoke-test/task.yml
           params:
@@ -655,7 +655,7 @@ jobs: ##########################################################################
         - get: version
           passed: [ shipit ]
         - get: release
-          resource: cflinuxfs2-release
+          resource: cflinuxfs2-release-deprecated
       - do:
         - task: run-both-bosh-scripts
           file: buildpacks-ci/tasks/create-bosh-release/task.yml
@@ -666,7 +666,7 @@ jobs: ##########################################################################
             RELEASE_DIR: release
             ACCESS_KEY_ID: {{pivotal-buildpacks-s3-access-key}}
             SECRET_ACCESS_KEY: {{pivotal-buildpacks-s3-secret-key}}
-        - put: cflinuxfs2-release
+        - put: cflinuxfs2-release-deprecated
           params:
             repository: release-artifacts
         on_failure:
@@ -689,7 +689,7 @@ jobs: ##########################################################################
           trigger: true
         - get: version
           passed: [ shipit ]
-        - get: cflinuxfs2-rootfs-release
+        - get: cflinuxfs2-release
       - do:
         - task: create-cflinuxfs2-rootfs-release
           file: buildpacks-ci/tasks/create-cflinuxfs2-rootfs-release/task.yml
@@ -697,7 +697,7 @@ jobs: ##########################################################################
             BLOB_NAME: rootfs
             BLOB_GLOB: blob/cflinuxfs2-*.tar.gz
             RELEASE_NAME: cflinuxfs2-rootfs
-            RELEASE_DIR: cflinuxfs2-rootfs-release
+            RELEASE_DIR: cflinuxfs2-release
             ACCESS_KEY_ID: {{cloudfoundry-s3-access-key}}
             SECRET_ACCESS_KEY: {{cloudfoundry-s3-secret-key}}
         - task: create-release-body
@@ -706,7 +706,7 @@ jobs: ##########################################################################
             ROOTFS_TYPE: cflinuxfs2
         - task: create-release-commit
           file: buildpacks-ci/tasks/create-rootfs-bosh-release-commit/task.yml
-        - put: cflinuxfs2-rootfs-release
+        - put: cflinuxfs2-release
           params:
             repository: release-artifacts
         - put: cflinuxfs2-rootfs-github-release
