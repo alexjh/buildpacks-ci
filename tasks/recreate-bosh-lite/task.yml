@@ -13,7 +13,7 @@ run:
   path: bash
   args:
     - -cl
-    - buildpacks-ci/tasks/recreate-bosh-lite/run.rb
+    - rsync -a deployments-buildpacks/ deployments-buildpacks-artifacts
 params:
   IAAS:
   GCP_BOSH_LITE_NAME:
