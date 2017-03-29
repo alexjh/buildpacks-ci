@@ -9,13 +9,12 @@ inputs:
 run:
   path: bash
   args:
-    - -cl
+    - -c
     - |
       cd buildpacks-ci
-      bundle exec ./tasks/create-open-issues-story/run.rb
+      bundle exec ./tasks/create-new-cflinuxfs2-release-story/run.rb
 params:
   TRACKER_PROJECT_ID:
   TRACKER_API_TOKEN:
   TRACKER_REQUESTER_ID:
-  GITHUB_USERNAME:
-  GITHUB_PASSWORD:
+

@@ -6,11 +6,11 @@ require_relative 'release-notes-creator'
 require_relative '../../lib/git-client'
 
 
-previous_version = File.read('previous-stacks-release/version').strip
+previous_version = File.read('previous-cflinuxfs2-release/version').strip
 new_version = File.read('version/number').strip
 
-if ENV.fetch('STACK') == 'stacks'
-  old_receipt_uri = "https://raw.githubusercontent.com/cloudfoundry/stacks/#{previous_version}/cflinuxfs2/cflinuxfs2_receipt"
+if ENV.fetch('STACK') == 'cflinuxfs2'
+  old_receipt_uri = "https://raw.githubusercontent.com/cloudfoundry/cflinuxfs2/#{previous_version}/cflinuxfs2/cflinuxfs2_receipt"
   cve_yaml_file = 'new-cves/new-cve-notifications/ubuntu14.04.yml'
   cves_dir = 'new-cve-notifications'
 elsif ENV.fetch('STACK') == 'stacks-nc'
@@ -26,7 +26,7 @@ else
   raise "Unsupported stack: #{ENV.fetch('STACK')}"
 end
 
-new_receipt_file = 'stacks/cflinuxfs2/cflinuxfs2_receipt'
+new_receipt_file = 'cflinuxfs2/cflinuxfs2/cflinuxfs2_receipt'
 old_receipt_file = open(old_receipt_uri)
 
 body_file = 'release-body/body'
@@ -49,7 +49,7 @@ File.write(cve_yaml_file, updated_cves.to_yaml)
 robots_cve_dir = File.join('new-cves', cves_dir)
 Dir.chdir(robots_cve_dir) do
   GitClient.add_file('ubuntu14.04.yml')
-  commit_message = "Updating CVEs for #{ENV.fetch('STACK')} release #{new_version}\n\n[ci skip]"
+  commit_message = "Updating CVEs for #{ENV.fetch('STACK')} release #{new_version}\n\n"
   GitClient.safe_commit(commit_message)
 end
 
