@@ -26,7 +26,7 @@ resources: #####################################################################
   - name: builds-out
     type: git
     source:
-      uri: git@github.com:cloudfoundry/public-buildpacks-ci-robots
+      uri: git@github.com:alexjh/public-buildpacks-ci-robots
       branch: master
       paths: [ binary-builds/* ]
       private_key: {{public-buildpacks-ci-robots-private-key}}
@@ -36,7 +36,7 @@ resources: #####################################################################
   - name: <%= dep %>-builds
     type: git
     source:
-      uri: git@github.com:cloudfoundry/public-buildpacks-ci-robots
+      uri: git@github.com:alexjh/public-buildpacks-ci-robots
       branch: master
       paths: [ binary-builds/<%= dep %>-builds.yml ]
       private_key: {{public-buildpacks-ci-robots-private-key}}
@@ -47,7 +47,7 @@ resources: #####################################################################
   - name: <%= dep %>-built-output
     type: git
     source:
-      uri: git@github.com:cloudfoundry/public-buildpacks-ci-robots
+      uri: git@github.com:alexjh/public-buildpacks-ci-robots
       branch: master
       paths: [ binary-built-output/<%= dep %>-built.yml ]
       private_key: {{public-buildpacks-ci-robots-private-key}}
@@ -57,7 +57,7 @@ resources: #####################################################################
   - name: <%= auto_dep %>-builds-in
     type: git
     source:
-      uri: git@github.com:cloudfoundry/public-buildpacks-ci-robots
+      uri: git@github.com:alexjh/public-buildpacks-ci-robots
       branch: master
       paths: [ binary-builds/<%= auto_dep %>-builds.yml ]
       private_key: {{public-buildpacks-ci-robots-private-key}}
@@ -65,7 +65,7 @@ resources: #####################################################################
   - name: <%= auto_dep %>-new-releases
     type: git
     source:
-      uri: git@github.com:cloudfoundry/public-buildpacks-ci-robots
+      uri: git@github.com:alexjh/public-buildpacks-ci-robots
       branch: master
       paths: [ new-release-notifications/<%= auto_dep %>-new.yml ]
       private_key: {{public-buildpacks-ci-robots-private-key}}
@@ -89,12 +89,12 @@ resources: #####################################################################
 
   ## S3 Buckets ##
 
-<% %w(bower godep hwc dotnet composer glide nginx node yarn).each do |dependency| %>
-  - name: <%= dependency %>-binary
+<% dep_built_output_names.each do |dep| %>
+  - name: <%= dep %>-binary
     type: s3
     source:
       bucket: {{buildpacks-binaries-s3-bucket}}
-      regexp: dependencies/<%= dependency %>/(.*)
+      regexp: dependencies/<%= dep %>/(.*)
       access_key_id: {{pivotal-buildpacks-s3-access-key}}
       secret_access_key: {{pivotal-buildpacks-s3-secret-key}}
       endpoint: http://10.9.168.108.nip.io:9000
@@ -160,7 +160,7 @@ jobs: ##########################################################################
         - get: binary-builder
           trigger: true
       - do:
-        <% integration_spec_names = %w(bundler glide go godep httpd hwc jruby nginx nodejs php5 php7 php71 php5_with_oracle php7_with_oracle php5_with_geolitedb php7_with_geolitedb python ruby url_output yaml_flag dotnet) %>
+        <% integration_spec_names = %w(bundler glide go godep httpd hwc jruby nginx nodejs php5 php7 php71 php5_with_geolitedb php7_with_geolitedb python ruby url_output yaml_flag dotnet) %>
         - task: all-expected-integration-specs-will-run
           file: buildpacks-ci/tasks/check-for-binary-builder-integration-spec-presence/task.yml
           params:
@@ -169,24 +169,23 @@ jobs: ##########################################################################
           file: buildpacks-ci/tasks/run-binary-builder-unit-specs/task.yml
           params:
             RUBYGEM_MIRROR: {{rubygem-mirror}}
-        - aggregate:
-          <% integration_spec_names.each do |spec_name| %>
-          - task: integration-<%= spec_name %>
-            file: buildpacks-ci/tasks/run-binary-builder-integration-specs/task.yml
-            params:
-              SPEC_TO_RUN: <%= spec_name %>
-              RUBYGEM_MIRROR: {{rubygem-mirror}}
-              RUN_ORACLE_PHP_TESTS: <%= run_oracle_php_tests %>
-            <% if run_oracle_php_tests == 'true' %>
-              AWS_ACCESS_KEY_ID: {{oracle-client-library-s3-download-access-key}}
-              AWS_SECRET_ACCESS_KEY: {{oracle-client-library-s3-download-secret-key}}
-              AWS_DEFAULT_REGION: us-east-1
-              ORACLE_LIBS_AWS_BUCKET: {{oracle-client-libs-s3-bucket}}
-              ORACLE_LIBS_FILENAME: {{oracle-client-libs-filename}}
-            <% end %>
-            privileged: true
-            attempts: 5
-          <% end %>
+        #   <% integration_spec_names.each do |spec_name| %>
+        # - task: integration-<%= spec_name %>
+        #   file: buildpacks-ci/tasks/run-binary-builder-integration-specs/task.yml
+        #   params:
+        #     SPEC_TO_RUN: <%= spec_name %>
+        #     RUBYGEM_MIRROR: {{rubygem-mirror}}
+        #     RUN_ORACLE_PHP_TESTS: <%= run_oracle_php_tests %>
+        #   <% if run_oracle_php_tests == 'true' %>
+        #     AWS_ACCESS_KEY_ID: {{oracle-client-library-s3-download-access-key}}
+        #     AWS_SECRET_ACCESS_KEY: {{oracle-client-library-s3-download-secret-key}}
+        #     AWS_DEFAULT_REGION: us-east-1
+        #     ORACLE_LIBS_AWS_BUCKET: {{oracle-client-libs-s3-bucket}}
+        #     ORACLE_LIBS_FILENAME: {{oracle-client-libs-filename}}
+        #   <% end %>
+        #   privileged: true
+        #   attempts: 5
+        #   <% end %>
         on_failure:
           put: failure-alert
           params:
@@ -199,7 +198,7 @@ jobs: ##########################################################################
   - name: build-<%= dependency %>
     serial: true
     public: true
-    disable_manual_trigger: true # instead, trigger jobs by pushing yaml to public-buildpacks-ci-robots/binary-builds
+    # disable_manual_trigger: true # instead, trigger jobs by pushing yaml to public-buildpacks-ci-robots/binary-builds
     plan:
       - aggregate:
         - get: builds-yaml
@@ -220,14 +219,9 @@ jobs: ##########################################################################
             BINARY_BUILDER_PLATFORM: {{binary-builder-platform}}
             BINARY_BUILDER_OS_NAME: {{binary-builder-os-name}}
           privileged: true
-        - task: push-binary
-          file: buildpacks-ci/tasks/push-binary/task.yml
+        - put: <%= dependency %>-binary
           params:
-            DEPENDENCY: <%= dependency %>
-            BUCKET_NAME: {{buildpacks-binaries-s3-bucket}}
-            AWS_ACCESS_KEY_ID: {{pivotal-buildpacks-s3-access-key}}
-            AWS_SECRET_ACCESS_KEY: {{pivotal-buildpacks-s3-secret-key}}
-            AWS_DEFAULT_REGION: us-east-1
+            file: binary-builder-artifacts/*
         - put: builds-out
           params:
             repository: builds-yaml-artifacts
@@ -373,14 +367,9 @@ jobs: ##########################################################################
       - do:
         - task: extract-dotnet-framework
           file: buildpacks-ci/tasks/extract-dotnet-framework/task.yml
-        - task: push-binary
-          file: buildpacks-ci/tasks/push-binary/task.yml
+        - put: dotnet-framework-binary
           params:
-            DEPENDENCY: dotnet-framework
-            BUCKET_NAME: {{buildpacks-binaries-s3-bucket}}
-            AWS_ACCESS_KEY_ID: {{pivotal-buildpacks-s3-access-key}}
-            AWS_SECRET_ACCESS_KEY: {{pivotal-buildpacks-s3-secret-key}}
-            AWS_DEFAULT_REGION: us-east-1
+            file: binary-builder-artifacts/*
         - put: dotnet-framework-built-output
           params:
             repository: dotnet-framework-built-output
