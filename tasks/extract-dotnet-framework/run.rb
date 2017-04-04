@@ -37,6 +37,7 @@ class ExtractDotnetFramework
 
   def download
     dotnet_sdk_url = "https://buildpacks.cloudfoundry.org/dependencies/dotnet/#{@dotnet_sdk_filename}"
+    dotnet_sdk_url = "http://10.9.168.108:9000/pivotal-buildpacks/dependencies/dotnet/dotnet.1.0.1.linux-amd64-95c167d1.tar.gz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=G1CAYYPK31DL74NWADXY%2F20170404%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20170404T203919Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=d9b9f4eb0a61fc25fd15fa838a90137cda3fff62d697b636e34aa4c97bb2d94c"
     raise "Downloading dotnet sdk tar failed" unless system("curl", "-o", @dotnet_sdk_tar, dotnet_sdk_url)
   end
 
